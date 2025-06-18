@@ -20,7 +20,7 @@ rise_subdirs = glob.glob(rise_indir + "sub-*")
 crest_subdirs = glob.glob(crest_indir + "sub-*")
 subdirs = rise_subdirs + crest_subdirs
 
-t1 = {'subid':[]}
+t1 = {'subid':[], 'chat':[]}
 
 for subdir in subdirs:
     sub = subdir.split('/')[9]
@@ -29,8 +29,14 @@ for subdir in subdirs:
     sessions = [i.split('/')[10] for i in sessions]
     if 'ses-1' in sessions and subid != '10.21':
         for ses in sessions:
+            sesid = ses.split('-')[1]
             if sesid == '1':
                 t1['subid'].append(subid)
+                chat = glob.glob(subdir + "/ses-" + sesid + "/func/*chatroom*.nii.gz")
+                if chat != "":
+                    t1['chat'] = 1
+                else:
+                    t1['chat'] = 0
 
-t1_t3_df = pd.DataFrame.from_dict(t1_t3)
-t1_t3_df.to_csv('/projects/b1108/projects/personalized_versus_group/data/processed/neuroimaging/tabulated/rise_crest_t1_neuro_'+datetime.today().strftime('%Y-%m-%d')+'.csv', index=False)
+t1_df = pd.DataFrame.from_dict(t1)
+t1_df.to_csv('/projects/b1108/projects/personalized_versus_group/data/processed/neuroimaging/tabulated/rise_crest_t1_neuro_'+datetime.today().strftime('%Y-%m-%d')+'.csv', index=False)
