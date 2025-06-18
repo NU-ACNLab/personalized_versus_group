@@ -1,0 +1,13 @@
+*~
+*DS_Store
+papers/*
+plots/*
+data/*
+abstracts/*
+models/*
+notes/*
+launch/*
+tables/*
+publication/*
+*.rds
+*.csv
