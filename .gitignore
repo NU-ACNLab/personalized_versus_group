@@ -9,5 +9,6 @@ notes/*
 launch/*
 tables/*
 publication/*
+notes/*
 *.rds
 *.csv
