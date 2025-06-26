@@ -71,7 +71,7 @@ for ses in ${sessions}; do
 
     # set input directories
     bidsdir=/projects/b1108/studies/mwmh/data/raw/neuroimaging/bids/${sub}/${ses}/func
-    numses=`find ${neurodir}/fmriprep_23.2.0/${sub} -type d -name "ses-*" | wc -l`
+    numses=`echo ${sessions} | wc -l`
 
     if [ ${numses} == 1 ]; then
       anatindir=${neurodir}/fmriprep_23.2.0/${sub}/${ses}/anat
