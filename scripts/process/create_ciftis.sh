@@ -56,7 +56,7 @@ wb_shortcuts -freesurfer-resample-prep ${freedir}/surf/rh.white ${freedir}/surf/
   ${anatoutdir}/${sub}.R.midthickness.32k_fs_LR.surf.gii \
   ${anatoutdir}/rh.sphere.reg.surf.gii
 
-sessions=`find ${neurodir}/fmriprep_23.2.0/${sub} -name "ses-*" | cut -d "/" -f 11`
+sessions=`find ${neurodir}/fmriprep_23.2.0/${sub}/ses-* -name "func" | cut -d "/" -f 11`
 
 for ses in ${sessions}; do
     echo ${ses}
