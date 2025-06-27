@@ -1,7 +1,7 @@
 ### This script creates output directories
 ###
 ### Ellyn Butler
-### June 24, 2025 - June 26, 2025
+### June 24, 2025 - June 27, 2025
 
 
 import os
@@ -35,7 +35,7 @@ for subdir in subdirs:
             os.mkdir(outdir+sub+'/'+ses)
     sub_bold_imgs = glob.glob(indir+sub+'/ses-*/func/*_space-T1w_desc-preproc_bold.nii.gz')
     if len(sub_bold_imgs) > 0:
-        cmd = ['bash /projects/b1108/projects/personalized_versus_group/scripts/process/create_ciftis.sh -s', sub]
+        cmd = ['bash /projects/b1108/projects/personalized_versus_group/scripts/process/create_ciftis_rise.sh -s', sub]
         create_ciftis_script = launchdir+sub+'_create_ciftis_run.sh'
         os.system('cat /projects/b1108/projects/personalized_versus_group/scripts/process/sbatchinfo_9hr_10G_general.sh > '+create_ciftis_script)
         os.system('echo '+' '.join(cmd)+' >> '+create_ciftis_script)
