@@ -7,7 +7,7 @@
 ### Resampling-FreeSurfer-HCP.pdf
 ###
 ### Ellyn Butler
-### June 24, 2024 - June 26, 2025
+### June 24, 2024 - June 27, 2025
 
 
 while getopts ":s:" option; do
@@ -71,7 +71,7 @@ for ses in ${sessions}; do
 
     # set input directories
     bidsdir=/projects/b1108/studies/mwmh/data/raw/neuroimaging/bids/${sub}/${ses}/func
-    numses=`echo ${sessions} | wc -l`
+    numses=`echo ${sessions} | grep -o 'ses-[^ ]*' | wc -l`
 
     if [ ${numses} == 1 ]; then
       anatindir=${neurodir}/fmriprep_23.2.0/${sub}/${ses}/anat
