@@ -1,7 +1,7 @@
 ### This script creates output directories
 ###
 ### Ellyn Butler
-### June 24, 2025 - June 27, 2025
+### June 24, 2025 - July 1, 2025
 
 
 import os
@@ -34,10 +34,24 @@ for subdir in subdirs:
         if not os.path.exists(outdir+sub+'/'+ses):
             os.mkdir(outdir+sub+'/'+ses)
     sub_bold_imgs = glob.glob(indir+sub+'/ses-*/func/*_space-T1w_desc-preproc_bold.nii.gz')
-    if len(sub_bold_imgs) > 0:
+    output_imgs = glob.glob(outdir+sub+'/ses-*/func/*_bold.dscalar.nii')
+    if len(sub_bold_imgs) > 0 and len(output_imgs) == 0:
+        print(sub)
         cmd = ['bash /projects/b1108/projects/personalized_versus_group/scripts/process/create_ciftis_rise.sh -s', sub]
         create_ciftis_script = launchdir+sub+'_create_ciftis_run.sh'
         os.system('cat /projects/b1108/projects/personalized_versus_group/scripts/process/sbatchinfo_9hr_10G_general.sh > '+create_ciftis_script)
         os.system('echo '+' '.join(cmd)+' >> '+create_ciftis_script)
         os.system('chmod +x '+create_ciftis_script)
         os.system('sbatch -o '+launchdir+sub+'.txt'+' '+create_ciftis_script)
+
+i=0
+for subdir in subdirs:
+    sub = subdir.split('/')[9]
+    txtlog = launchdir+sub+'.txt'
+    if os.path.exists(txtlog):
+        with open(txtlog) as myfile:
+            if 'ERROR' in myfile.read():
+                print(subdir)
+                i=i+1 
+    else:
+        print(sub + ' processing does not exist')

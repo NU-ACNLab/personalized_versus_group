@@ -7,7 +7,7 @@
 ### Resampling-FreeSurfer-HCP.pdf
 ###
 ### Ellyn Butler
-### June 24, 2024 - June 27, 2025
+### June 24, 2024 - July 1, 2025
 
 
 while getopts ":s:" option; do
@@ -98,75 +98,44 @@ for ses in ${sessions}; do
       fslrfMRI_R=${funcoutdir}/${sub}_${ses}_${taskrun}.R.fslr.func.gii
 
       ##### 3) map t1-space bold to native freesurfer (note: no -volume-roi flag, assuming this is an SNR mask)
-      if [ ${numses} == 1 ]; then
-        # left
-        wb_command -volume-to-surface-mapping ${VolumefMRI} ${anatindir}/${sub}_${ses}_run-1_hemi-L_midthickness.surf.gii \
-          ${nativesurfMRI_L} -ribbon-constrained ${anatindir}/${sub}_${ses}_run-1_hemi-L_white.surf.gii \
-          ${anatindir}/${sub}_${ses}_run-1_hemi-L_pial.surf.gii
+      # left
+      midthick_L=`find ${anatindir}/ -name "*_hemi-L_midthickness.surf.gii"`
+      white_L=`find ${anatindir}/ -name "*_hemi-L_white.surf.gii"`
+      pial_L=`find ${anatindir}/ -name "*_hemi-L_pial.surf.gii"`
+      wb_command -volume-to-surface-mapping ${VolumefMRI} ${midthick_L} \
+        ${nativesurfMRI_L} -ribbon-constrained ${white_L} ${pial_L}
 
-        # right
-        wb_command -volume-to-surface-mapping ${VolumefMRI} ${anatindir}/${sub}_${ses}_run-1_hemi-R_midthickness.surf.gii \
-          ${nativesurfMRI_R} -ribbon-constrained ${anatindir}/${sub}_${ses}_run-1_hemi-R_white.surf.gii \
-          ${anatindir}/${sub}_${ses}_run-1_hemi-R_pial.surf.gii
-      else
-        # left
-        wb_command -volume-to-surface-mapping ${VolumefMRI} ${anatindir}/${sub}_run-1_hemi-L_midthickness.surf.gii \
-          ${nativesurfMRI_L} -ribbon-constrained ${anatindir}/${sub}_run-1_hemi-L_white.surf.gii \
-          ${anatindir}/${sub}_run-1_hemi-L_pial.surf.gii
+      # right
+      midthick_R=`find ${anatindir}/ -name "*_hemi-R_midthickness.surf.gii"`
+      white_R=`find ${anatindir}/ -name "*_hemi-R_white.surf.gii"`
+      pial_R=`find ${anatindir}/ -name "*_hemi-R_pial.surf.gii"`
+      wb_command -volume-to-surface-mapping ${VolumefMRI} ${midthick_R} \
+        ${nativesurfMRI_R} -ribbon-constrained ${white_R} ${pial_R}
 
-        # right
-        wb_command -volume-to-surface-mapping ${VolumefMRI} ${anatindir}/${sub}_run-1_hemi-R_midthickness.surf.gii \
-          ${nativesurfMRI_R} -ribbon-constrained ${anatindir}/${sub}_run-1_hemi-R_white.surf.gii \
-          ${anatindir}/${sub}_run-1_hemi-R_pial.surf.gii
-      fi
 
       ##### 4) dilate by ten, consistent b/w fmriprep and dcan hcp pipeline
       # (would love to know how they converged on this value. Note: input and output are same)
-      if [ ${numses} == 1 ]; then
-        # left
-        wb_command -metric-dilate ${nativesurfMRI_L} \
-          ${anatindir}/${sub}_${ses}_run-1_hemi-L_midthickness.surf.gii 10 \
-          ${nativesurfMRI_L} -nearest
+      # left
+      wb_command -metric-dilate ${nativesurfMRI_L} \
+        ${midthick_L} 10 \
+        ${nativesurfMRI_L} -nearest
 
-        # right
-        wb_command -metric-dilate ${nativesurfMRI_R} \
-          ${anatindir}/${sub}_${ses}_run-1_hemi-R_midthickness.surf.gii 10 \
-          ${nativesurfMRI_R} -nearest
-      else
-        # left
-        wb_command -metric-dilate ${nativesurfMRI_L} \
-          ${anatindir}/${sub}_run-1_hemi-L_midthickness.surf.gii 10 \
-          ${nativesurfMRI_L} -nearest
-
-        # right
-        wb_command -metric-dilate ${nativesurfMRI_R} \
-          ${anatindir}/${sub}_run-1_hemi-R_midthickness.surf.gii 10 \
-          ${nativesurfMRI_R} -nearest
-      fi
+      # right
+      wb_command -metric-dilate ${nativesurfMRI_R} \
+        ${midthick_R} 10 \
+        ${nativesurfMRI_R} -nearest
 
       ##### 5) resample native surface to fslr
       # (note: omission of roi use again)
-      if [ ${numses} == 1 ]; then
-        # left
-        wb_command -metric-resample ${nativesurfMRI_L} ${anatoutdir}/lh.sphere.reg.surf.gii \
-          ${hcptempdir}/fs_LR-deformed_to-fsaverage.L.sphere.32k_fs_LR.surf.gii BARYCENTRIC \
-          ${fslrfMRI_L} 
+      # left
+      wb_command -metric-resample ${nativesurfMRI_L} ${anatoutdir}/lh.sphere.reg.surf.gii \
+        ${hcptempdir}/fs_LR-deformed_to-fsaverage.L.sphere.32k_fs_LR.surf.gii BARYCENTRIC \
+        ${fslrfMRI_L} 
 
-        # right
-        wb_command -metric-resample ${nativesurfMRI_R} ${anatoutdir}/rh.sphere.reg.surf.gii \
-          ${hcptempdir}/fs_LR-deformed_to-fsaverage.R.sphere.32k_fs_LR.surf.gii BARYCENTRIC \
-          ${fslrfMRI_R} 
-      else #pick up here
-        # left
-        wb_command -metric-resample ${nativesurfMRI_L} ${anatoutdir}/lh.sphere.reg.surf.gii \
-          ${hcptempdir}/fs_LR-deformed_to-fsaverage.L.sphere.32k_fs_LR.surf.gii BARYCENTRIC \
-          ${fslrfMRI_L} 
-
-        # right
-        wb_command -metric-resample ${nativesurfMRI_R} ${anatoutdir}/rh.sphere.reg.surf.gii \
-          ${hcptempdir}/fs_LR-deformed_to-fsaverage.R.sphere.32k_fs_LR.surf.gii BARYCENTRIC \
-          ${fslrfMRI_R} 
-      fi
+      # right
+      wb_command -metric-resample ${nativesurfMRI_R} ${anatoutdir}/rh.sphere.reg.surf.gii \
+        ${hcptempdir}/fs_LR-deformed_to-fsaverage.R.sphere.32k_fs_LR.surf.gii BARYCENTRIC \
+        ${fslrfMRI_R} 
 
       ##### 6) Set the structure parameter so that wb_view knows how to display the data
       wb_command -set-structure ${fslrfMRI_L} CORTEX_LEFT
