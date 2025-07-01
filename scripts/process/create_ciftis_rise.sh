@@ -34,10 +34,6 @@ freedir=${neurodir}/fmriprep_23.2.0/sourcedata/freesurfer/${sub}
 # hcp directory
 hcptempdir=/projects/b1108/hcp/global/templates/standard_mesh_atlases/resample_fsaverage
 
-# fslr midthickness
-midthick_L=/projects/b1108/templates/HCP_S1200_GroupAvg_v1/S1200.L.midthickness_MSMAll.32k_fs_LR.surf.gii
-midthick_R=/projects/b1108/templates/HCP_S1200_GroupAvg_v1/S1200.L.midthickness_MSMAll.32k_fs_LR.surf.gii
-
 ##### 1) Convert freesurfer T1w image to a nifti
 mri_convert ${freedir}/mri/T1.mgz ${outdir}/surf/${sub}/anat/fs_T1w.nii.gz
 
@@ -99,30 +95,29 @@ for ses in ${sessions}; do
 
       ##### 3) map t1-space bold to native freesurfer (note: no -volume-roi flag, assuming this is an SNR mask)
       # left
-      midthick_L=`find ${anatindir}/ -name "*_hemi-L_midthickness.surf.gii"`
-      white_L=`find ${anatindir}/ -name "*_hemi-L_white.surf.gii"`
-      pial_L=`find ${anatindir}/ -name "*_hemi-L_pial.surf.gii"`
-      wb_command -volume-to-surface-mapping ${VolumefMRI} ${midthick_L} \
-        ${nativesurfMRI_L} -ribbon-constrained ${white_L} ${pial_L}
+      sub_midthick_L=`find ${anatindir}/ -name "*_hemi-L_midthickness.surf.gii"`
+      sub_white_L=`find ${anatindir}/ -name "*_hemi-L_white.surf.gii"`
+      sub_pial_L=`find ${anatindir}/ -name "*_hemi-L_pial.surf.gii"`
+      wb_command -volume-to-surface-mapping ${VolumefMRI} ${sub_midthick_L} \
+        ${nativesurfMRI_L} -ribbon-constrained ${sub_white_L} ${sub_pial_L}
 
       # right
-      midthick_R=`find ${anatindir}/ -name "*_hemi-R_midthickness.surf.gii"`
-      white_R=`find ${anatindir}/ -name "*_hemi-R_white.surf.gii"`
-      pial_R=`find ${anatindir}/ -name "*_hemi-R_pial.surf.gii"`
-      wb_command -volume-to-surface-mapping ${VolumefMRI} ${midthick_R} \
-        ${nativesurfMRI_R} -ribbon-constrained ${white_R} ${pial_R}
-
+      sub_midthick_R=`find ${anatindir}/ -name "*_hemi-R_midthickness.surf.gii"`
+      sub_white_R=`find ${anatindir}/ -name "*_hemi-R_white.surf.gii"`
+      sub_pial_R=`find ${anatindir}/ -name "*_hemi-R_pial.surf.gii"`
+      wb_command -volume-to-surface-mapping ${VolumefMRI} ${sub_midthick_R} \
+        ${nativesurfMRI_R} -ribbon-constrained ${sub_white_R} ${sub_pial_R}
 
       ##### 4) dilate by ten, consistent b/w fmriprep and dcan hcp pipeline
       # (would love to know how they converged on this value. Note: input and output are same)
       # left
       wb_command -metric-dilate ${nativesurfMRI_L} \
-        ${midthick_L} 10 \
+        ${sub_midthick_L} 10 \
         ${nativesurfMRI_L} -nearest
 
       # right
       wb_command -metric-dilate ${nativesurfMRI_R} \
-        ${midthick_R} 10 \
+        ${sub_midthick_R} 10 \
         ${nativesurfMRI_R} -nearest
 
       ##### 5) resample native surface to fslr
