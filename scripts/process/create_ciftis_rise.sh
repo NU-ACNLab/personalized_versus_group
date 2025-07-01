@@ -52,7 +52,17 @@ wb_shortcuts -freesurfer-resample-prep ${freedir}/surf/rh.white ${freedir}/surf/
   ${anatoutdir}/${sub}.R.midthickness.32k_fs_LR.surf.gii \
   ${anatoutdir}/rh.sphere.reg.surf.gii
 
-sessions=`find ${neurodir}/fmriprep_23.2.0/${sub}/ses-* -name "func" | cut -d "/" -f 11`
+# Get the correct number of sessions (surprisingly complicated)
+sessions_func=`find ${neurodir}/fmriprep_23.2.0/${sub}/ses-* -name "func" | cut -d "/" -f 11`
+sessions_anat=`find ${neurodir}/fmriprep_23.2.0/${sub}/ses-* -name "anat" | cut -d "/" -f 11`
+numses_func=`echo ${sessions_func} | grep -o 'ses-[^ ]*' | wc -l`
+numses_anat=`echo ${sessions_anat} | grep -o 'ses-[^ ]*' | wc -l`
+
+if [ "${numses_func}" -gt "${numses_anat}" ]; then
+  numses=${numses_func}
+else
+  numses=${numses_anat}
+fi
 
 for ses in ${sessions}; do
     echo ${ses}
@@ -66,9 +76,6 @@ for ses in ${sessions}; do
     done
 
     # set input directories
-    bidsdir=/projects/b1108/studies/mwmh/data/raw/neuroimaging/bids/${sub}/${ses}/func
-    numses=`echo ${sessions} | grep -o 'ses-[^ ]*' | wc -l`
-
     if [ ${numses} == 1 ]; then
       anatindir=${neurodir}/fmriprep_23.2.0/${sub}/${ses}/anat
     else
