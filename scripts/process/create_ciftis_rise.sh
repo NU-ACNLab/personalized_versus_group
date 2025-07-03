@@ -60,8 +60,10 @@ numses_anat=`echo ${sessions_anat} | grep -o 'ses-[^ ]*' | wc -l`
 
 if [ "${numses_func}" -gt "${numses_anat}" ]; then
   numses=${numses_func}
+  sessions=${sessions_func}
 else
   numses=${numses_anat}
+  sessions=${sessions_anat}
 fi
 
 for ses in ${sessions}; do
