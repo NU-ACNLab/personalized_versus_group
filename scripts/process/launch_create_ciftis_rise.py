@@ -56,5 +56,5 @@ for subdir in subdirs:
     else:
         print(sub + ' processing does not exist')
 
-        #50133 only got really messy T1w - couldn't stay awake
-        #July 1, 2025: 50001 somehow didn't get fmripreped - RUNNING NOW... OSError: Duplicate node name "bold_ses_1_task_chatroom_run_01_wf" found.
+        #50133 - only got really messy T1w - couldn't stay awake
+        #50001 - somehow didn't get fmripreped - RUNNING NOW (July 1, 2025)... OSError: Duplicate node name "bold_ses_1_task_chatroom_run_01_wf" found.

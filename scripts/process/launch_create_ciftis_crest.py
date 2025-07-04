@@ -1,7 +1,7 @@
 ### This script creates output directories
 ###
 ### Ellyn Butler
-### June 24, 2025 - July 1, 2025
+### June 24, 2025 - July 3, 2025
 
 
 import os
@@ -55,3 +55,5 @@ for subdir in subdirs:
                 i=i+1 
     else:
         print(sub + ' processing does not exist')
+        # 100033 - scan was lost due to scanner upgrade
+        # 100337 - failed freesurfer at fmriprep stage
