@@ -1,4 +1,4 @@
-### This script generates submission scripts postprocessing
+### This script generates submission scripts for postprocessing
 ###
 ### Ellyn Butler
 ### July 4, 2025
