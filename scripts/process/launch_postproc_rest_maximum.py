@@ -39,7 +39,7 @@ for subdir in subdirs:
         ses = 'ses-1'
         cmd = ['Rscript /projects/b1108/projects/personalized_versus_group/scripts/process/postproc_rest_maximum.R -s ', subid, ' -e 1']
         postproc_rest_maximum_script = launchdir+sub+'_'+ses+'_postproc_rest_maximum_run.sh'
-        os.system('cat /projects/b1108/projects/personalized_versus_group/scripts/process/sbatchinfo_20min_10G_general.sh > '+postproc_rest_maximum_script)
+        os.system('cat /projects/b1108/projects/personalized_versus_group/scripts/process/sbatchinfo_40min_10G_general.sh > '+postproc_rest_maximum_script)
         os.system('echo '+' '.join(cmd)+' >> '+postproc_rest_maximum_script)
         os.system('chmod +x '+postproc_rest_maximum_script)
         os.system('sbatch -o '+launchdir+sub+'_'+ses+'_postproc_rest_maximum.txt'+' '+postproc_rest_maximum_script)
@@ -54,7 +54,7 @@ for subdir in subdirs:
         ses = 'ses-2'
         cmd = ['Rscript /projects/b1108/projects/personalized_versus_group/scripts/process/postproc_rest_maximum.R -s ', subid, ' -e 2']
         postproc_rest_maximum_script = launchdir+sub+'_'+ses+'_postproc_rest_maximum_run.sh'
-        os.system('cat /projects/b1108/projects/personalized_versus_group/scripts/process/sbatchinfo_20min_10G_general.sh > '+postproc_rest_maximum_script)
+        os.system('cat /projects/b1108/projects/personalized_versus_group/scripts/process/sbatchinfo_40min_10G_general.sh > '+postproc_rest_maximum_script)
         os.system('echo '+' '.join(cmd)+' >> '+postproc_rest_maximum_script)
         os.system('chmod +x '+postproc_rest_maximum_script)
         os.system('sbatch -o '+launchdir+sub+'_'+ses+'_postproc_rest_maximum.txt'+' '+postproc_rest_maximum_script)
@@ -69,7 +69,7 @@ for subdir in subdirs:
         ses = 'ses-3'
         cmd = ['Rscript /projects/b1108/projects/personalized_versus_group/scripts/process/postproc_rest_maximum.R -s ', subid, ' -e 3']
         postproc_rest_maximum_script = launchdir+sub+'_'+ses+'_postproc_rest_maximum_run.sh'
-        os.system('cat /projects/b1108/projects/personalized_versus_group/scripts/process/sbatchinfo_20min_10G_general.sh > '+postproc_rest_maximum_script)
+        os.system('cat /projects/b1108/projects/personalized_versus_group/scripts/process/sbatchinfo_40min_10G_general.sh > '+postproc_rest_maximum_script)
         os.system('echo '+' '.join(cmd)+' >> '+postproc_rest_maximum_script)
         os.system('chmod +x '+postproc_rest_maximum_script)
         os.system('sbatch -o '+launchdir+sub+'_'+ses+'_postproc_rest_maximum.txt'+' '+postproc_rest_maximum_script)
