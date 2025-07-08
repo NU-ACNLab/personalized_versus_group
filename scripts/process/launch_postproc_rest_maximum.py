@@ -73,3 +73,23 @@ for subdir in subdirs:
         os.system('echo '+' '.join(cmd)+' >> '+postproc_rest_maximum_script)
         os.system('chmod +x '+postproc_rest_maximum_script)
         os.system('sbatch -o '+launchdir+sub+'_'+ses+'_postproc_rest_maximum.txt'+' '+postproc_rest_maximum_script)
+
+i=0
+for subdir in subdirs:
+    sub = subdir.split('/')[9]
+    txtlog = launchdir+sub+'.txt'
+    if os.path.exists(txtlog):
+        with open(txtlog) as myfile:
+            if 'ERROR' in myfile.read():
+                print(subdir)
+                i=i+1 
+    else:
+        print(sub + ' processing does not exist')
+
+# July 6, 2025 - sanity check
+# sub-10.21 processing does not exist - good, trial sub
+# sub-50133 processing does not exist - good, only has a T1w image
+# sub-1.9.2 processing does not exist - good, trial sub
+# sub-100333 processing does not exist - good, scan was lost due to scanner upgrade
+# sub-100337 processing does not exist - good, failed freesurfer at fmriprep stage
+# sub-50001 processing does not exist - investigate... ciftis hadn't been created... exists now
