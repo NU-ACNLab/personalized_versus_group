@@ -11,4 +11,4 @@
 
 Rscript /projects/b1108/projects/personalized_versus_group/scripts/process/estimate_prior.R
 
-#sbatch -o /projects/b1108/projects/personalized_versus_group/data/processed/neuroimaging/launch/prior/estimate_prior.txt /projects/b1108/studies/mwmh/scripts/process/launch_estimate_prior.sh
+#sbatch -o /projects/b1108/projects/personalized_versus_group/data/processed/neuroimaging/launch/prior/estimate_prior.txt /projects/b1108/projects/personalized_versus_group/scripts/process/launch_estimate_prior.sh
