@@ -9,10 +9,13 @@ import re
 import numpy as np
 import glob
 import nibabel as nib
+import pandas as pd
 
-launchdir = '/projects/b1108/projects/personalized_versus_group/data/processed/neuroimaging/launch/surfnet/'
-indir = '/projects/b1108/projects/personalized_versus_group/data/processed/neuroimaging/surf/'
-outdir = '/projects/b1108/projects/personalized_versus_group/data/processed/neuroimaging/surfnet/'
+basedir = '/projects/b1108/projects/personalized_versus_group/data/processed/neuroimaging/'
+launchdir = basedir + 'launch/surfnet/'
+indir = basedir + 'surf/'
+outdir = basedir + 'surfnet/'
+tabdir = basedir + 'tabulated/'
 
 if not os.path.exists(launchdir):
     os.mkdir(launchdir)
@@ -20,11 +23,13 @@ if not os.path.exists(launchdir):
 if not os.path.exists(outdir):
     os.mkdir(outdir)
 
-subdirs = glob.glob(indir + "sub-*")
+# Get the subject directories for the 387 subjects in the prior
+df = pd.read_csv(tabdir + 'prior_subjects.csv')
+subdirs = df['subid'].apply(lambda x: os.path.join(indir + 'sub-' + str(x)))
+subdirs = subdirs.to_list()
 
 for subdir in subdirs:
     sub = subdir.split('/')[9]
-    badsubs = ['sub-100321', 'sub-100326', 'sub-100308'] #have less than 5 minutes left of data after nuisance regression
     if sub not in badsubs:
         if not os.path.exists(outdir+sub):
             os.mkdir(outdir+sub)
