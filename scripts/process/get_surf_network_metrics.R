@@ -54,7 +54,13 @@ print('Identify areas of engagement')
 network_membership <- engagements(networks_img, z = 3, verbose = TRUE, method_p = 'fdr', type = '>')
 saveRDS(network_membership, paste0(outdir, 'sub-', subid, '/ses-', sesid, '/network_membership.rds'))
 
-cii <- move_from_mwall(cii, NA)
+cii <- move_from_mwall(cii, NA) #TBD where to put this exactly
+
+# Get surface area for each vertex in fsLR32k resampled to 10k
+fsLR <- load_surf(resamp_res = 10000) #dim = 10242 3
+fsLR <- move_to_mwall(fsLR, NA)
+sa <- surf_area(fsLR) #vector of length 10242... shouldn't it be twice as long? what with both hemispheres?
+                      # Or is it equal for each hemisphere?
 
 networks <- c('visuala', 'visualb', 'somatomotora', 'somatomotorb', 'dorsalattentiona',
               'dorsalattentionb', 'saliencea', 'salienceb', 'limbica', 'limbicb',
@@ -64,21 +70,35 @@ for (net in 1:17) {
         ###### Get the area that each network takes up
         print('Expansion')
 
-        left_wsum <- sum(network_membership$engaged$data[[1]][, net]*networks_img$subjNet_mean$data[[1]][, net], na.rm = TRUE)
-        exp_pos <- (sum(c(network_membership$engaged$data[[1]][, net]) == 1, na.rm = TRUE) + sum(c(network_membership$engaged$data[[2]][, net]) == 1, na.rm = TRUE))/(nrow(network_membership$engaged$data[[1]]) + nrow(network_membership$engaged$data[[2]]))
-        assign(paste0('exp_', networks[net], '_pos'), exp_pos)
-        # TO DO
-        # 1) weight by the surface area that each vertex occupies in fsLR-32k space
-        # 2) weight by the estimated engagement of the vertex for a given network
+        # left
+        left_pos_eng <- network_membership$engaged$data[[1]][, net] > 0
+        left_pos_lvl <- networks_img$subjNet_mean$data[[1]][, net]
+        left_wsum <- sum((left_pos_eng*left_pos_lvl*sa), na.rm = TRUE) #want everything to be 9282 so the sum(sa) makes sense
+        
+        # right
+        right_pos_eng <- network_membership$engaged$data[[2]][, net] > 0
+        right_pos_lvl <- networks_img$subjNet_mean$data[[2]][, net]
+        right_wsum <- sum((right_pos_eng*right_pos_lvl*sa), na.rm = TRUE) 
 
-        ###### Estimate personalized within network connectivity
+        exp_pos <- (left_wsum + right_wsum)/(2*sum(sa)) #want everything to be 9282 so the sum(sa) makes sense... don't want to be including sa of medial wall vertices
+        #exp_pos <- (sum(c(network_membership$engaged$data[[1]][, net]) == 1, na.rm = TRUE) + sum(c(network_membership$engaged$data[[2]][, net]) == 1, na.rm = TRUE))/(nrow(network_membership$engaged$data[[1]]) + nrow(network_membership$engaged$data[[2]]))
+        assign(paste0('exp_', networks[net], '_pos'), exp_pos)
+
+        ###### Estimate personalized within network connectivity - July 17, 2025: This chunk is working
         print('Connectivity')
 
-        #July 16, 2025: THIS IS THE OLD WAY
-        mask_pos <- as.matrix(network_membership$engaged)[, net] > 0 
+        mask_pos <- as.matrix(network_membership$engaged)[, net] > 0 #length 20484
         FC_mat_pos <- cor(t(as.matrix(cii)[mask_pos & complete.cases(as.matrix(cii)),])) #time series engaged locations by all the time points
-        FC_vec_pos <- FC_mat_pos[upper.tri(FC_mat_pos)]
-        FC_pos <- mean(FC_vec_pos, na.rm = TRUE)
+        FC_pos <- 0
+        this_sa <- c(sa[left_pos_eng], sa[right_pos_eng]) #assuming left then right in as.matrix(cii)
+        this_eng <- c(left_pos_lvl[left_pos_eng], right_pos_lvl[right_pos_eng])
+        for (i in 1:ncol(FC_mat_pos)) {
+                for (j in (i+1):ncol(FC_mat_pos)) {
+                        if (i < ncol(FC_mat_pos)) {
+                                FC_pos <- FC_pos + (this_sa[i]*this_eng[i]*this_sa[j]*this_eng[j]*FC_mat_pos[i, j])/(this_sa[i] + this_sa[j])
+                        }
+                }
+        }
         assign(paste0('FC_pers_', networks[net], '_pos'), FC_pos)
 
         ###### Estimate personalized between network connectivity
