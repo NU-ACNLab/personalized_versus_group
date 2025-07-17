@@ -22,7 +22,7 @@ parser$add_argument('-e', '--sesid', type='character', help='Session Identifier'
 
 args <- parser$parse_args()
 
-subid = args$subid #100237, 50064
+subid = args$subid # 50064
 sesid = args$sesid #1
 
 print(subid)
@@ -45,6 +45,7 @@ cii <- read_cifti(path)
 print('Single subject map estimation')
 networks_img <- BrainMap(cii, prior, tvar_method = 'unbiased', hpf = 0,
                 scale = 'local', TR = 2.05, scale_sm_FWHM = 2, GSR = FALSE) 
+networks_img <- move_from_mwall(networks_img, NA)
 
 saveRDS(networks_img, paste0(outdir, 'sub-', subid, '/ses-', sesid, '/networks_img.rds'))
 
@@ -63,6 +64,7 @@ for (net in 1:17) {
         ###### Get the area that each network takes up
         print('Expansion')
 
+        left_wsum <- sum(network_membership$engaged$data[[1]][, net]*networks_img$subjNet_mean$data[[1]][, net], na.rm = TRUE)
         exp_pos <- (sum(c(network_membership$engaged$data[[1]][, net]) == 1, na.rm = TRUE) + sum(c(network_membership$engaged$data[[2]][, net]) == 1, na.rm = TRUE))/(nrow(network_membership$engaged$data[[1]]) + nrow(network_membership$engaged$data[[2]]))
         assign(paste0('exp_', networks[net], '_pos'), exp_pos)
         # TO DO
@@ -70,7 +72,7 @@ for (net in 1:17) {
         # 2) weight by the estimated engagement of the vertex for a given network
 
         ###### Estimate personalized within network connectivity
-        print('Personalized connectivity')
+        print('Connectivity')
 
         #July 16, 2025: THIS IS THE OLD WAY
         mask_pos <- as.matrix(network_membership$engaged)[, net] > 0 
