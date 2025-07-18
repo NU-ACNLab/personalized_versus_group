@@ -45,20 +45,19 @@ cii <- read_cifti(path)
 print('Single subject map estimation')
 networks_img <- BrainMap(cii, prior, tvar_method = 'unbiased', hpf = 0,
                 scale = 'local', TR = 2.05, scale_sm_FWHM = 2, GSR = FALSE) 
-networks_img <- move_from_mwall(networks_img, NA)
 
 saveRDS(networks_img, paste0(outdir, 'sub-', subid, '/ses-', sesid, '/networks_img.rds'))
 
 ###### Identify areas of engagement and deviation
 print('Identify areas of engagement')
 network_membership <- engagements(networks_img, z = 3, verbose = TRUE, method_p = 'fdr', type = '>')
+
 saveRDS(network_membership, paste0(outdir, 'sub-', subid, '/ses-', sesid, '/network_membership.rds'))
 
 cii <- move_from_mwall(cii, NA) #TBD where to put this exactly
 
 # Get surface area for each vertex in fsLR32k resampled to 10k
-fsLR <- load_surf(resamp_res = 10000) #dim = 10242 3
-fsLR <- move_to_mwall(fsLR, NA)
+fsLR <- load_surf(name = 'midthickness', resamp_res = 10000) #dim = 10242 3
 sa <- surf_area(fsLR) #vector of length 10242... shouldn't it be twice as long? what with both hemispheres?
                       # Or is it equal for each hemisphere?
 
@@ -70,17 +69,17 @@ for (net in 1:17) {
         ###### Get the area that each network takes up
         print('Expansion')
 
-        # left
-        left_pos_eng <- network_membership$engaged$data[[1]][, net] > 0
-        left_pos_lvl <- networks_img$subjNet_mean$data[[1]][, net]
-        left_wsum <- sum((left_pos_eng*left_pos_lvl*sa), na.rm = TRUE) #want everything to be 9282 so the sum(sa) makes sense
-        
-        # right
-        right_pos_eng <- network_membership$engaged$data[[2]][, net] > 0
-        right_pos_lvl <- networks_img$subjNet_mean$data[[2]][, net]
-        right_wsum <- sum((right_pos_eng*right_pos_lvl*sa), na.rm = TRUE) 
+        pos_eng_cii <- network_membership$engaged > 0
+        pos_lvl_cii <- networks_img$subjNet_mean
+        pos_lvl_cii <- move_from_mwall(pos_lvl_cii, NA)
 
-        exp_pos <- (left_wsum + right_wsum)/(2*sum(sa)) #want everything to be 9282 so the sum(sa) makes sense... don't want to be including sa of medial wall vertices
+        wvec <- as.matrix(pos_eng_cii)[,net] * as.matrix(pos_lvl_cii)[,net] * sa
+        left_wsum <- sum(wvec[seq(10242)], na.rm=TRUE)
+        right_wsum <- sum(wvec[seq(10243, 20484)], na.rm=TRUE)
+
+        sa_nonmed <- c(sa, sa)[!is.na(wvec)] #!is.na(wvec) is 9283 though
+
+        exp_pos <- (left_wsum + right_wsum)/(sum(nonmed_sa)) #want everything to be 9282 so the sum(sa) makes sense... don't want to be including sa of medial wall vertices
         #exp_pos <- (sum(c(network_membership$engaged$data[[1]][, net]) == 1, na.rm = TRUE) + sum(c(network_membership$engaged$data[[2]][, net]) == 1, na.rm = TRUE))/(nrow(network_membership$engaged$data[[1]]) + nrow(network_membership$engaged$data[[2]]))
         assign(paste0('exp_', networks[net], '_pos'), exp_pos)
 
