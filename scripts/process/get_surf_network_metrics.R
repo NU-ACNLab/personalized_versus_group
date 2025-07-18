@@ -65,7 +65,7 @@ networks <- c('visuala', 'visualb', 'somatomotora', 'somatomotorb', 'dorsalatten
               'dorsalattentionb', 'saliencea', 'salienceb', 'limbica', 'limbicb',
               'controla', 'controlb', 'controlc', 'defaulta', 'defaultb', 'defaultc',
               'temporalparietal')
-for (net in 1:17) {
+for (net1 in 1:17) {
         ###### Get the area that each network takes up
         print('Expansion')
 
@@ -73,7 +73,7 @@ for (net in 1:17) {
         pos_lvl_cii <- networks_img$subjNet_mean
         pos_lvl_cii <- move_from_mwall(pos_lvl_cii, NA)
 
-        wvec <- as.matrix(pos_eng_cii)[,net] * as.matrix(pos_lvl_cii)[,net] * sa
+        wvec <- as.matrix(pos_eng_cii)[, net1] * as.matrix(pos_lvl_cii)[, net1] * sa
         left_wsum <- sum(wvec[seq(10242)], na.rm=TRUE)
         right_wsum <- sum(wvec[seq(10243, 20484)], na.rm=TRUE)
 
@@ -81,28 +81,40 @@ for (net in 1:17) {
 
         exp_pos <- (left_wsum + right_wsum)/(sum(nonmed_sa)) #want everything to be 9282 so the sum(sa) makes sense... don't want to be including sa of medial wall vertices
         #exp_pos <- (sum(c(network_membership$engaged$data[[1]][, net]) == 1, na.rm = TRUE) + sum(c(network_membership$engaged$data[[2]][, net]) == 1, na.rm = TRUE))/(nrow(network_membership$engaged$data[[1]]) + nrow(network_membership$engaged$data[[2]]))
-        assign(paste0('exp_', networks[net], '_pos'), exp_pos)
+        assign(paste0('exp_', networks[net1], '_pos'), exp_pos)
 
         ###### Estimate personalized within network connectivity - July 17, 2025: This chunk is working
         print('Connectivity')
 
-        mask_pos <- as.matrix(network_membership$engaged)[, net] > 0 #length 20484
-        FC_mat_pos <- cor(t(as.matrix(cii)[mask_pos & complete.cases(as.matrix(cii)),])) #time series engaged locations by all the time points
+        mask_pos <- as.matrix(network_membership$engaged)[, net1] > 0 #length 20484
+        FC_net1_pos <- cor(t(as.matrix(cii)[mask_pos & complete.cases(as.matrix(cii)),])) #time series engaged locations by all the time points
         FC_pos <- 0
-        this_sa <- c(sa[left_pos_eng], sa[right_pos_eng]) #assuming left then right in as.matrix(cii)
-        this_eng <- c(left_pos_lvl[left_pos_eng], right_pos_lvl[right_pos_eng])
+        sas <- c(sa, sa)
+        net1_sa <- sas[as.matrix(pos_eng_cii)[, net1]] #Why are they all 5.33507? There should only be two like this... sum(sas == net1_sa[1])
+        net1_eng <- pos_lvl_cii[as.matrix(pos_eng_cii)[, net1]]
         for (i in 1:ncol(FC_mat_pos)) {
                 for (j in (i+1):ncol(FC_mat_pos)) {
                         if (i < ncol(FC_mat_pos)) {
-                                FC_pos <- FC_pos + (this_sa[i]*this_eng[i]*this_sa[j]*this_eng[j]*FC_mat_pos[i, j])/(this_sa[i] + this_sa[j])
+                                FC_pos <- FC_pos + (net1_sa[i]*net1_eng[i]*net1_sa[j]*net1_eng[j]*FC_net1_pos[i, j])/(this_sa[i] + this_sa[j])
                         }
                 }
         }
         assign(paste0('FC_pers_', networks[net], '_pos'), FC_pos)
 
         ###### Estimate personalized between network connectivity
-        for (net2 in (net+1):17) {
-
+        for (net2 in (net1+1):17) {
+                mask_pos <- as.matrix(network_membership$engaged)[, net2] > 0 #length 20484
+                FC_net2_pos <- cor(t(as.matrix(cii)[mask_pos & complete.cases(as.matrix(cii)),])) #time series engaged locations by all the time points
+                FC_pos <- 0
+                net2_sa <- c(sa[left_pos_eng], sa[right_pos_eng]) #need to fix this
+                net2_eng <- c(left_pos_lvl[left_pos_eng], right_pos_lvl[right_pos_eng]) #need to fix this
+                for (i in 1:ncol(FC_mat_pos)) {
+                        for (j in (i+1):ncol(FC_mat_pos)) {
+                                if (i < ncol(FC_mat_pos)) {
+                                        FC_pos <- FC_pos + (net1_sa[i]*net1_eng[i]*net1_sa[j]*net1_eng[j]*FC_net1_pos[i, j])/(this_sa[i] + this_sa[j])
+                                }
+                        }
+                }
                 assign(paste0('FC_pers_', networks[net], '_', networks[net2], '_pos'), FC_pos)
         }
 
