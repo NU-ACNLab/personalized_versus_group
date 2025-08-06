@@ -135,8 +135,8 @@ for (net1 in 1:17) {
                         net2_eng <- as.matrix(pos_lvl_cii)[which(mask_pos2), net2]
                         for (i in 1:nrow(FC_net1_net2_pos)) {
                                 for (j in 1:ncol(FC_net1_net2_pos)) {
-                                        FC_pos <- FC_pos + (net1_sa[i]*net1_eng[i]*net1_sa[j]*net2_eng[j]*FC_net1_net2_pos[i, j])
-                                        denom <- denom + net1_sa[i]*net1_eng[i]*net1_sa[j]*net2_eng[j]
+                                        FC_pos <- FC_pos + (net1_sa[i]*net1_eng[i]*net2_sa[j]*net2_eng[j]*FC_net1_net2_pos[i, j])
+                                        denom <- denom + net1_sa[i]*net1_eng[i]*net2_sa[j]*net2_eng[j]
                                 }
                         }
                         FC_pos <- FC_pos/denom
@@ -176,7 +176,7 @@ for (net1 in 1:17) {
                         net2_sa <- sa[which(mask_pos2)]
                         for (i in 1:nrow(FC_net1_net2_pos)) {
                                 for (j in 1:ncol(FC_net1_net2_pos)) {
-                                        FC_pos <- FC_pos + (net1_sa[i]*net1_sa[j]*FC_net1_net2_pos[i, j])
+                                        FC_pos <- FC_pos + (net1_sa[i]*net2_sa[j]*FC_net1_net2_pos[i, j])
                                         denom <- denom + net1_sa[i]*net1_sa[j]
                                 }
                         }
@@ -224,8 +224,8 @@ for (net1 in 1:17) {
                         net2_eng <- as.matrix(pos_lvl_cii)[which(mask_pos2), net2]
                         for (i in 1:nrow(FC_net1_net2_pos)) {
                                 for (j in 1:ncol(FC_net1_net2_pos)) {
-                                        FC_pos <- FC_pos + (net1_sa[i]*net1_eng[i]*net1_sa[j]*net2_eng[j]*FC_net1_net2_pos[i, j])
-                                        denom <- denom + net1_sa[i]*net1_eng[i]*net1_sa[j]*net2_eng[j]
+                                        FC_pos <- FC_pos + (net1_sa[i]*net1_eng[i]*net2_sa[j]*net2_eng[j]*FC_net1_net2_pos[i, j])
+                                        denom <- denom + net1_sa[i]*net1_eng[i]*net2_sa[j]*net2_eng[j]
                                 }
                         }
                         FC_pos <- FC_pos/denom
