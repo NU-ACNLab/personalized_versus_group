@@ -1,7 +1,7 @@
 ### This script generates submission obtaining personalized network metrics
 ###
 ### Ellyn Butler
-### July 16, 2025
+### July 16, 2025 - August 6, 2025
 
 import os
 import shutil
@@ -30,23 +30,23 @@ subdirs = subdirs.to_list()
 
 for subdir in subdirs:
     sub = subdir.split('/')[9]
-    if sub not in badsubs:
-        if not os.path.exists(outdir+sub):
-            os.mkdir(outdir+sub)
-        sub_bold_imgs = glob.glob(indir+sub+'/ses-1/func/*_task-chatroom_run-01_space-fsLR_desc-maxpostproc_bold.dscalar.nii')
-        subid = sub.split('-')[1]
-        sesid = 1
-        if not os.path.exists(outdir+sub+'/ses-1'):
-            os.mkdir(outdir+sub+'/ses-1')
-        if not os.path.exists(outdir + 'sub-' + subid + '/ses-1/sub-' +
-                                subid + '_ses-1_surf_network_metrics.csv'):
-            cmd = ['Rscript /projects/b1108/projects/personalized_versus_group/scripts/process/get_surf_network_metrics.R -s', subid, '-e 1']
-            get_surf_network_metrics_script = launchdir+sub+'_'+ses+'_get_surf_network_metrics_run.sh'
-            os.system('cat /projects/b1108/projects/personalized_versus_group/scripts/process/sbatchinfo_9hr_10G_general.sh > '+get_surf_network_metrics_script)
-            os.system('echo module purge >> '+get_surf_network_metrics_script)
-            os.system('echo module load gdal/3.1.3-R-4.1.1 proj/7.1.1 geos/3.8.1 gsl/2.6-gcc-8.4.0 >> '+get_surf_network_metrics_script)
-            os.system('echo module load R/4.3.0 >> '+get_surf_network_metrics_script)
-            os.system('echo module load udunits2/2.2.20 >> '+get_surf_network_metrics_script)
-            os.system('echo '+' '.join(cmd)+' >> '+get_surf_network_metrics_script)
-            os.system('chmod +x '+get_surf_network_metrics_script)
-            os.system('sbatch -o '+launchdir+sub+'_'+ses+'_get_surf_network_metrics.txt'+' '+get_surf_network_metrics_script)
+    if not os.path.exists(outdir+sub):
+        os.mkdir(outdir+sub)
+    sub_bold_imgs = glob.glob(indir+sub+'/ses-1/func/*_task-chatroom_run-01_space-fsLR_desc-maxpostproc_bold.dscalar.nii')
+    subid = sub.split('-')[1]
+    ses = 'ses-1'
+    sesid = 1
+    if not os.path.exists(outdir+sub+'/ses-1'):
+        os.mkdir(outdir+sub+'/ses-1')
+    if not os.path.exists(outdir + 'sub-' + subid + '/ses-1/sub-' +
+                            subid + '_ses-1_surf_network_metrics.csv'):
+        cmd = ['Rscript /projects/b1108/projects/personalized_versus_group/scripts/process/get_surf_network_metrics.R -s', subid, '-e 1']
+        get_surf_network_metrics_script = launchdir+sub+'_'+ses+'_get_surf_network_metrics_run.sh'
+        os.system('cat /projects/b1108/projects/personalized_versus_group/scripts/process/sbatchinfo_9hr_10G_general.sh > '+get_surf_network_metrics_script)
+        os.system('echo module purge >> '+get_surf_network_metrics_script)
+        os.system('echo module load gdal/3.1.3-R-4.1.1 proj/7.1.1 geos/3.8.1 gsl/2.6-gcc-8.4.0 >> '+get_surf_network_metrics_script)
+        os.system('echo module load R/4.3.0 >> '+get_surf_network_metrics_script)
+        os.system('echo module load udunits2/2.2.20 >> '+get_surf_network_metrics_script)
+        os.system('echo '+' '.join(cmd)+' >> '+get_surf_network_metrics_script)
+        os.system('chmod +x '+get_surf_network_metrics_script)
+        os.system('sbatch -o '+launchdir+sub+'_'+ses+'_get_surf_network_metrics.txt'+' '+get_surf_network_metrics_script)
