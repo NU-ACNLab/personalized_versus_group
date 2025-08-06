@@ -81,9 +81,11 @@ pos_lvl_cii <- move_from_mwall(pos_lvl_cii, NA)
 df <- data.frame(subid = subid, sesid = sesid)
 
 for (net1 in 1:17) {
+        print(paste0('Estimating network metrics for ', networks[net1]))
+
         ###### Check to see if any vertices belong to net1
         mask_pos <- as.matrix(network_membership$engaged)[, net1] > 0
-        if (sum(mask_pos) == 0) { next }
+        if (sum(mask_pos, na.rm=TRUE) == 0) { next }
 
         ###### Get the area that each network takes up
         print('Estimate expansion')
@@ -123,7 +125,7 @@ for (net1 in 1:17) {
                 # Check to make sure some vertices actually belong to net2
                 mask_pos2 <- as.matrix(network_membership$engaged)[, net2] > 0 #length 20484
 
-                if (sum(mask_pos2) == 0) { next }
+                if (sum(mask_pos2, na.rm=TRUE) == 0) { next }
                 FC_net1_net2_pos <- cor(t(as.matrix(cii)[which(mask_pos),]), 
                         t(as.matrix(cii)[which(mask_pos2),])) 
                 FC_pos <- 0
@@ -208,7 +210,7 @@ for (net1 in 1:17) {
                 mask_pos2 <- as.matrix(network_membership$engaged)[, net2] > 0 #length 20484
                 mask_pos2 <- mask_pos*as.matrix(yeo) == net2
 
-                if (sum(mask_pos2) == 0) { next }
+                if (sum(mask_pos2, na.rm=TRUE) == 0) { next }
                 FC_net1_net2_pos <- cor(t(as.matrix(cii)[which(mask_pos),]), 
                         t(as.matrix(cii)[which(mask_pos2),])) 
                 FC_pos <- 0
