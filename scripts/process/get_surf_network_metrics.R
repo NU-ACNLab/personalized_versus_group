@@ -37,6 +37,9 @@ surfdir <- paste0(neurodir, 'surf/')
 outdir <- paste0(neurodir, 'surfnet/')
 
 ###### Load Yeo
+yeo <- readRDS('/projects/b1108/projects/personalized_versus_group/data/processed/neuroimaging/prior/GPARC.rds')
+yeo <- resample_cifti(yeo, resamp_res = 10000)
+yeo <- move_from_mwall(yeo, NA) 
 
 ###### Load the cifti
 path <- paste0(surfdir, 'sub-', subid, '/ses-', sesid, '/func/sub-', subid, 
@@ -75,6 +78,10 @@ pos_lvl_cii <- networks_img$subjNet_mean # dim(pos_lvl_cii) = 18566
 pos_lvl_cii <- move_from_mwall(pos_lvl_cii, NA)
 
 for (net1 in 1:17) {
+        ###### Check to see if any vertices belong to net1
+        mask_pos <- as.matrix(network_membership$engaged)[, net1] > 0
+        if (sum(mask_pos) == 0) { next }
+
         ###### Get the area that each network takes up
         print('Expansion')
 
@@ -90,7 +97,6 @@ for (net1 in 1:17) {
         ###### Estimate personalized within network connectivity
         print('Connectivity')
 
-        mask_pos <- as.matrix(network_membership$engaged)[, net1] > 0 #length 20484
         FC_net1_pos <- cor(t(as.matrix(cii)[mask_pos & complete.cases(as.matrix(cii)),])) #time series engaged locations by all the time points
         FC_pos <- 0
         denom <- 0
@@ -105,11 +111,14 @@ for (net1 in 1:17) {
                 }
         }
         FC_pos <- FC_pos/denom
-        assign(paste0('FC_pers_', networks[net], '_pos'), FC_pos) #correct up to here now
+        assign(paste0('FC_pers_', networks[net1], '_pos'), FC_pos) 
 
         ###### Estimate personalized between network connectivity
         for (net2 in (net1+1):17) {
+                # Check to make sure some vertices actually belong to net2
                 mask_pos2 <- as.matrix(network_membership$engaged)[, net2] > 0 #length 20484
+
+                if (sum(mask_pos2) == 0) { next }
                 FC_net1_net2_pos <- cor(t(as.matrix(cii)[mask_pos & complete.cases(as.matrix(cii)),]), 
                         t(as.matrix(cii)[mask_pos2 & complete.cases(as.matrix(cii)),])) 
                 FC_pos <- 0
@@ -123,26 +132,49 @@ for (net1 in 1:17) {
                         }
                 }
                 FC_pos <- FC_pos/denom
-                assign(paste0('FC_pers_', networks[net], '_', networks[net2], '_pos'), FC_pos)
-        }
+                assign(paste0('FC_pers_', networks[net1], '_', networks[net2], '_pos'), FC_pos)
+        } 
 
         ###### Estimate group within network connectivity
-
+        mask_pos <- as.matrix(yeo) == net1 
+        FC_net1_pos <- cor(t(as.matrix(cii)[mask_pos & complete.cases(as.matrix(cii)),])) 
+        FC_pos <- 0
+        denom <- 0
+        net1_sa <- sa[which(mask_pos)]
+        for (i in 1:ncol(FC_net1_pos)) {
+                for (j in (i+1):ncol(FC_net1_pos)) {
+                        if (i < ncol(FC_net1_pos)) {
+                                FC_pos <- FC_pos + net1_sa[i]*net1_sa[j]*FC_net1_pos[i, j]
+                                denom <- denom + net1_sa[i]*net1_sa[j]
+                        }
+                }
+        }
+        FC_pos <- FC_pos/denom
+        assign(paste0('FC_group_', networks[net1], '_pos'), FC_pos) 
 
         ###### Estimate group between network connectivity
-        for (net2 in (net+1):17) {
-                
-                assign(paste0('FC_group_', networks[net], '_', networks[net2], '_pos'), FC_pos)
-        }
+        for (net2 in (net1+1):17) {
+                mask_pos2 <- as.matrix(yeo) == net2
+                FC_net1_net2_pos <- cor(t(as.matrix(cii)[mask_pos & complete.cases(as.matrix(cii)),]), 
+                        t(as.matrix(cii)[mask_pos2 & complete.cases(as.matrix(cii)),])) 
+                FC_pos <- 0
+                denom <- 0
+                net2_sa <- sa[which(mask_pos2)]
+                for (i in 1:nrow(FC_net1_net2_pos)) {
+                        for (j in 1:ncol(FC_net1_net2_pos)) {
+                                FC_pos <- FC_pos + (net1_sa[i]*net1_sa[j]*FC_net1_net2_pos[i, j])
+                                denom <- denom + net1_sa[i]*net1_sa[j]
+                        }
+                }
+                FC_pos <- FC_pos/denom
+                assign(paste0('FC_group_', networks[net1], '_', networks[net2], '_pos'), FC_pos)
+        } #correct up to here now
 
         ###### Estimate intersection within network connectivity
 
 
         ###### Estimate intersection between network connectivity
-        for (net2 in (net+1):17) {
-                
-                assign(paste0('FC_int_', networks[net], '_', networks[net2], '_pos'), FC_pos)
-        }
+        
 }
 
 ###### Output the data
