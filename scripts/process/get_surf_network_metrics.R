@@ -177,7 +177,7 @@ for (net1 in 1:17) {
                         for (i in 1:nrow(FC_net1_net2_pos)) {
                                 for (j in 1:ncol(FC_net1_net2_pos)) {
                                         FC_pos <- FC_pos + (net1_sa[i]*net2_sa[j]*FC_net1_net2_pos[i, j])
-                                        denom <- denom + net1_sa[i]*net1_sa[j]
+                                        denom <- denom + net1_sa[i]*net2_sa[j]
                                 }
                         }
                         FC_pos <- FC_pos/denom
