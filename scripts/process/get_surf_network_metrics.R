@@ -23,7 +23,7 @@ parser$add_argument('-e', '--sesid', type='character', help='Session Identifier'
 args <- parser$parse_args()
 
 subid = args$subid # 50064
-sesid = args$sesid #1
+sesid = args$sesid # 1
 
 print(subid)
 print(sesid)
@@ -215,7 +215,7 @@ for (net1 in 1:17) {
                 if (net2 < 18) {
                         # Check to make sure some vertices actually belong to net2
                         mask_pos2 <- as.matrix(network_membership$engaged)[, net2] > 0 #length 20484
-                        mask_pos2 <- mask_pos*as.matrix(yeo) == net2
+                        mask_pos2 <- mask_pos2*as.matrix(yeo) == net2 #there's probably something wrong with this line
 
                         if (sum(mask_pos2, na.rm=TRUE) < 2) { next }
                         FC_net1_net2_pos <- cor(t(as.matrix(cii)[which(mask_pos),]), 
@@ -231,7 +231,7 @@ for (net1 in 1:17) {
                                 }
                         }
                         FC_pos <- FC_pos/denom
-                        df[, paste0('FC_pers_', networks[net1], '_', networks[net2], '_pos')] <- FC_pos
+                        df[, paste0('FC_int_', networks[net1], '_', networks[net2], '_pos')] <- FC_pos
                 }
         }   
 }
