@@ -85,7 +85,7 @@ for (net1 in 1:17) {
 
         ###### Check to see if any vertices belong to net1
         mask_pos <- as.matrix(network_membership$engaged)[, net1] > 0
-        if (sum(mask_pos, na.rm=TRUE) == 0) { next }
+        if (sum(mask_pos, na.rm=TRUE) < 2) { next }
 
         ###### Get the area that each network takes up
         print('Estimate expansion')
@@ -217,7 +217,7 @@ for (net1 in 1:17) {
                         mask_pos2 <- as.matrix(network_membership$engaged)[, net2] > 0 #length 20484
                         mask_pos2 <- mask_pos*as.matrix(yeo) == net2
 
-                        if (sum(mask_pos2, na.rm=TRUE) == 0) { next }
+                        if (sum(mask_pos2, na.rm=TRUE) < 2) { next }
                         FC_net1_net2_pos <- cor(t(as.matrix(cii)[which(mask_pos),]), 
                                 t(as.matrix(cii)[which(mask_pos2),])) 
                         FC_pos <- 0
