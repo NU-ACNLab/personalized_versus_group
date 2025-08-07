@@ -74,7 +74,7 @@ networks <- c('visuala', 'visualb', 'somatomotora', 'somatomotorb', 'dorsalatten
               'temporalparietal')
 
 pos_eng_cii <- network_membership$engaged > 0
-pos_lvl_cii <- networks_img$subjNet_mean # dim(pos_lvl_cii) = 18566
+pos_lvl_cii <- networks_img$subjNet_mean
 pos_lvl_cii <- move_from_mwall(pos_lvl_cii, NA)
 
 ##### Define dataframe
@@ -102,7 +102,7 @@ for (net1 in 1:17) {
         ###### Estimate personalized within network connectivity
         print('Estimate personalized within network connectivity')
 
-        FC_net1_pos <- cor(t(as.matrix(cii)[which(mask_pos),])) #time series engaged locations by all the time points
+        FC_net1_pos <- cor(t(as.matrix(cii)[which(mask_pos),]))
         FC_pos <- 0
         denom <- 0
         net1_sa <- sa[which(mask_pos)]
@@ -122,9 +122,9 @@ for (net1 in 1:17) {
         print('Estimate personalized between network connectivity')
 
         for (net2 in (net1+1):17) {
-                if (net2 < 18) {
+                if (net2 < 18 & net1 != net2) {
                         # Check to make sure some vertices actually belong to net2
-                        mask_pos2 <- as.matrix(network_membership$engaged)[, net2] > 0 #length 20484
+                        mask_pos2 <- as.matrix(network_membership$engaged)[, net2] > 0 
 
                         if (sum(mask_pos2, na.rm=TRUE) < 2) { next }
                         FC_net1_net2_pos <- cor(t(as.matrix(cii)[which(mask_pos),]), 
@@ -167,7 +167,7 @@ for (net1 in 1:17) {
         print('Estimate group between network connectivity')
 
         for (net2 in (net1+1):17) {
-                if (net2 < 18) {
+                if (net2 < 18 & net1 != net2) {
                         mask_pos2 <- as.matrix(yeo) == net2
                         FC_net1_net2_pos <- cor(t(as.matrix(cii)[which(mask_pos),]), 
                                 t(as.matrix(cii)[which(mask_pos2),])) 
@@ -189,10 +189,10 @@ for (net1 in 1:17) {
         print('Estimate intersection within network connectivity')
 
         mask_pos <- as.matrix(network_membership$engaged)[, net1] > 0
-        mask_pos <- mask_pos*as.matrix(yeo) == net1 #intersection mask
+        mask_pos <- mask_pos*as.matrix(yeo) == net1 
         if (sum(mask_pos, na.rm=TRUE) < 2) { next }
 
-        FC_net1_pos <- cor(t(as.matrix(cii)[which(mask_pos),])) #should be 194x194
+        FC_net1_pos <- cor(t(as.matrix(cii)[which(mask_pos),])) 
         FC_pos <- 0
         denom <- 0
         net1_sa <- sa[which(mask_pos)]
@@ -206,16 +206,16 @@ for (net1 in 1:17) {
                 }
         }
         FC_pos <- FC_pos/denom
-        df[, paste0('FC_int_', networks[net1], '_pos')] <- FC_pos #might be correct, but seems too close to pers
+        df[, paste0('FC_int_', networks[net1], '_pos')] <- FC_pos 
 
         ###### Estimate intersection between network connectivity
         print('Estimate intersection between network connectivity')
 
         for (net2 in (net1+1):17) {
-                if (net2 < 18) {
+                if (net2 < 18 & net1 != net2) {
                         # Check to make sure some vertices actually belong to net2
-                        mask_pos2 <- as.matrix(network_membership$engaged)[, net2] > 0 #length 20484
-                        mask_pos2 <- mask_pos2*as.matrix(yeo) == net2 #there's probably something wrong with this line
+                        mask_pos2 <- as.matrix(network_membership$engaged)[, net2] > 0 
+                        mask_pos2 <- mask_pos2*as.matrix(yeo) == net2 
 
                         if (sum(mask_pos2, na.rm=TRUE) < 2) { next }
                         FC_net1_net2_pos <- cor(t(as.matrix(cii)[which(mask_pos),]), 
