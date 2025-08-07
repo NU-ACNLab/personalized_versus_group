@@ -126,7 +126,7 @@ for (net1 in 1:17) {
                         # Check to make sure some vertices actually belong to net2
                         mask_pos2 <- as.matrix(network_membership$engaged)[, net2] > 0 #length 20484
 
-                        if (sum(mask_pos2, na.rm=TRUE) == 0) { next }
+                        if (sum(mask_pos2, na.rm=TRUE) < 2) { next }
                         FC_net1_net2_pos <- cor(t(as.matrix(cii)[which(mask_pos),]), 
                                 t(as.matrix(cii)[which(mask_pos2),])) 
                         FC_pos <- 0
@@ -190,8 +190,8 @@ for (net1 in 1:17) {
 
         mask_pos <- as.matrix(network_membership$engaged)[, net1] > 0
         mask_pos <- mask_pos*as.matrix(yeo) == net1 #intersection mask
-        if (sum(mask_pos, na.rm=TRUE) == 0) { next }
-        
+        if (sum(mask_pos, na.rm=TRUE) < 2) { next }
+
         FC_net1_pos <- cor(t(as.matrix(cii)[which(mask_pos),])) #should be 194x194
         FC_pos <- 0
         denom <- 0
