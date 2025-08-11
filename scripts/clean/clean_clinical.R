@@ -26,12 +26,12 @@ rise_bdi_df$redcap_event_name <- NULL
 rise_rrs_df$sesid <- recode(rise_rrs_df$redcap_event_name, 't1s2_b1_arm_1' = 1,
                             't3s2_b1_arm_1' = 3, 't5s2_b1_arm_1' = 5)
 rise_rrs_df$redcap_event_name <- NULL
-rise_spsrq_df$sesid <- recode(rise_spsrq_df$redcap_event_name, 't1s2_b1_arm_1' = 1,
-                               't3s2_b1_arm_1' = 3, 't5s2_b1_arm_1' = 5)
+rise_spsrq_df$sesid <- recode(rise_spsrq_df$redcap_event_name, 't1s1_b1_arm_1' = 1,
+                               't3s1_b1_arm_1' = 3, 't5s1_b1_arm_1' = 5)
 rise_spsrq_df$redcap_event_name <- NULL
-rise_psqi_df$sesid <- recode(rise_psqi_df$redcap_event_name, 't1s2_b1_arm_1' = 1,
-                            't2_b1_arm_1' = 2, 't3s2_b1_arm_1' = 3,
-                            't4_b1_arm_1' = 4, 't5s2_b1_arm_1' = 5)
+rise_psqi_df$sesid <- recode(rise_psqi_df$redcap_event_name, 't1s1_b1_arm_1' = 1,
+                            't2_b1_arm_1' = 2, 't3s1_b1_arm_1' = 3,
+                            't4_b1_arm_1' = 4, 't5s1_b1_arm_1' = 5)
 rise_psqi_df$redcap_event_name <- NULL                       
 
 # Merge and filter
@@ -82,76 +82,94 @@ if (all(names(rise_df) == names(crest_df)) == TRUE) {
     df <- rbind(rise_df, crest_df)
 }
 
-#Q (August 8, 2025): Why do RISE people basically just have BDI and RRS, and CREST people just SPSRQ and PSQI 
-
 # Understand
 dim(df) # there are 558 subjects with ses 1 data
-df[complete.cases(df[, c('bdi_1', 'rrs_1', 'spsrq_1', 'psqi_1_hh')]), ] 
-# ^ but only 236 of these started all of the surveys
-df[complete.cases(df),] # and only 33 have complete data from all surveys
+dim(df[complete.cases(df[, c('bdi_1', 'rrs_1', 'spsrq_1', 'psqi_1_hh')]), ] )
+# ^ 434 of these started all of the surveys
 
-# What about started some of the surveys?
-dim(df[complete.cases(df[, c('bdi_1', 'rrs_1')]), ]) #439
-dim(df[complete.cases(df[, c('spsrq_1', 'psqi_1_hh')]), ]) #244
-dim(df[complete.cases(df[, c('rrs_1', 'spsrq_1')]), ]) #243
-
-# So maybe I can only get away with using the BDI and the RRS...
-# People from both RISE and CREST have BDI and RRS?
-br_df <- df[complete.cases(df[, c('bdi_1', 'rrs_1')]), ]
-br_df$subid #yes, pretty even split of subids that start with 5 and 1
-
-# How much of the BDI and RRS do these people have?
-br_df2 <- df[complete.cases(df[, c(paste0('bdi_', 1:21), paste0('rrs_', 1:10))]), ]
-dim(br_df2) #419... this is the way to go
+# How much of the BDI, RRS, and SPSRQ do these people have?
+df <- df[complete.cases(df[, c('subid', 'sesid', paste0('bdi_', 1:21), 
+            paste0('rrs_', 1:10), paste0('spsrq_', 1:48))]), ]
+dim(df) #391... this is the way to go
 
 ####### Calculate summary scores
 
-
 ### RRS
-rrs_fa1 <- fa(br_df2[, paste0('rrs_', 1:10)], n.factors = 1)
-rrs_fa2 <- fa(br_df2[, paste0('rrs_', 1:10)], n.factors = 2)
+rrs_fa1 <- fa(df[, paste0('rrs_', 1:10)], n.factors = 1)
+rrs_fa2 <- fa(df[, paste0('rrs_', 1:10)], n.factors = 2)
 anova(rrs_fa1, rrs_fa2) # > Implies one factor solution... but weird identical?
 
 # Factor structure
-cormat <- round(cor(br_df2[, paste0('rrs_', 1:10)]), 2)
+cormat <- round(cor(df[, paste0('rrs_', 1:10)]), 2)
 corplot <- ggcorrplot(cormat, lab = TRUE, lab_size = 2) + ggtitle('RRS') #1 factor looks reasonable
 
 eigenvalues1 <- eigen(cormat)$values
 eigen_df1 <- data.frame(matrix(NA, nrow=length(eigenvalues1), ncol=2))
-names(eigen_df1) <- c("compnum", "eigen")
+names(eigen_df1) <- c('compnum', 'eigen')
 eigen_df1$compnum <- 1:10
 eigen_df1$eigen <- eigenvalues1
 
 rrs_scree <- ggplot(eigen_df1, aes(x=compnum, y=eigen)) +
-    geom_line(stat="identity") + geom_point() +  theme_minimal() +
-    xlab("Component Number") + ylab("Eigenvalues of Components") +
+    geom_line(stat = 'identity') + geom_point() +  theme_minimal() +
+    xlab('Component Number') + ylab('Eigenvalues of Components') +
     scale_y_continuous(limits=c(0, 10)) + ggtitle('RRS') +
     theme(plot.title = element_text(size=12), axis.title = element_text(size=10),
       axis.text = element_text(size=6)) #really 1 factor
 
 # Sum score
-br_df2$rrs_sum <- rowSums(br_df2[, paste0('rrs_', 1:10)])
+df$rrs_sum <- rowSums(df[, paste0('rrs_', 1:10)])
 
 ### BDI
-bdi_fa1 <- fa(br_df2[, paste0('bdi_', 1:21)], n.factors = 1)
-bdi_fa2 <- fa(br_df2[, paste0('bdi_', 1:21)], n.factors = 2)
+bdi_fa1 <- fa(df[, paste0('bdi_', 1:21)], n.factors = 1)
+bdi_fa2 <- fa(df[, paste0('bdi_', 1:21)], n.factors = 2)
 anova(bdi_fa1, bdi_fa2) # > Implies one factor solution... but weird identical?
 
-cormat <- round(cor(br_df2[, paste0('bdi_', 1:21)]), 2)
+cormat <- round(cor(df[, paste0('bdi_', 1:21)]), 2)
 corplot <- ggcorrplot(cormat, lab = TRUE, lab_size = 2) + ggtitle('BDI') #1 factor looks reasonable
 
 eigenvalues1 <- eigen(cormat)$values
 eigen_df1 <- data.frame(matrix(NA, nrow=length(eigenvalues1), ncol=2))
-names(eigen_df1) <- c("compnum", "eigen")
+names(eigen_df1) <- c('compnum', 'eigen')
 eigen_df1$compnum <- 1:21
 eigen_df1$eigen <- eigenvalues1
 
 bdi_scree <- ggplot(eigen_df1, aes(x=compnum, y=eigen)) +
-    geom_line(stat="identity") + geom_point() +  theme_minimal() +
-    xlab("Component Number") + ylab("Eigenvalues of Components") +
+    geom_line(stat='identity') + geom_point() +  theme_minimal() +
+    xlab('Component Number') + ylab('Eigenvalues of Components') +
     scale_y_continuous(limits=c(0, 10)) + ggtitle('BDI') +
     theme(plot.title = element_text(size=12), axis.title = element_text(size=10),
       axis.text = element_text(size=6)) #really 1 factor
 
 # Sum score
-br_df2$bdi_sum <- rowSums(br_df2[, paste0('bdi_', 1:21)])
+df$bdi_sum <- rowSums(df[, paste0('bdi_', 1:21)])
+
+### SPSRQ
+spsrq_fa1 <- fa(df[, paste0('spsrq_', 1:48)], n.factors = 1)
+spsrq_fa2 <- fa(df[, paste0('spsrq_', 1:48)], n.factors = 2)
+anova(spsrq_fa1, spsrq_fa2) # > Implies one factor solution... but weird identical? Yes, because looks like a two factor solution based on scree
+
+cormat <- round(cor(df[, paste0('spsrq_', 1:48)]), 2)
+corplot <- ggcorrplot(cormat, lab = TRUE, lab_size = 2) + ggtitle('SPSRQ') 
+
+eigenvalues1 <- eigen(cormat)$values
+eigen_df1 <- data.frame(matrix(NA, nrow=length(eigenvalues1), ncol=2))
+names(eigen_df1) <- c('compnum', 'eigen')
+eigen_df1$compnum <- 1:48
+eigen_df1$eigen <- eigenvalues1
+
+spsrq_scree <- ggplot(eigen_df1, aes(x=compnum, y=eigen)) +
+    geom_line(stat='identity') + geom_point() +  theme_minimal() +
+    xlab('Component Number') + ylab('Eigenvalues of Components') +
+    scale_y_continuous(limits=c(0, 10)) + ggtitle('SPSRQ') +
+    theme(plot.title = element_text(size=12), axis.title = element_text(size=10),
+      axis.text = element_text(size=6)) #really 2 factors
+
+# Sum score
+# https://arc.psych.wisc.edu/self-report/sensitivity-to-punishment-and-reward-questionnaire-spsrq/
+df$punishment <- rowSums(df[, paste0('spsrq_', seq(1, 47, 2))])
+df$reward <- rowSums(df[, paste0('spsrq_', seq(2, 48, 2))])
+
+####### Finalize and export
+
+df <- df[, c('subid', 'sesid', 'rrs_sum', 'bdi_sum', 'punishment', 'reward')]
+write.csv(df, paste0('~/Documents/Northwestern/projects/personalized_versus_group/data/processed/clinical/clinical_', format(Sys.Date(), "%Y-%m-%d"), '.csv'), row.names = FALSE)
