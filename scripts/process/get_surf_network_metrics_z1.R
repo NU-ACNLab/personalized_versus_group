@@ -4,7 +4,7 @@
 ### Yeo networks: https://www.researchgate.net/figure/Network-parcellation-of-Yeos-17-networks-The-17-networks-include-the-following-regions_fig1_352966687#:~:text=The%2017%2Dnetworks%20include%20the%20following%20regions%3A%20N1%3A%20VisCent,N7%3A%20exp_tAttnA%20%2DSalience%2FVentral
 ###
 ### Ellyn Butler
-### July 16, 2025 - 
+### August 17, 2025 
 
 # Load libraries
 library(BayesBrainMap)
@@ -46,18 +46,20 @@ path <- paste0(surfdir, 'sub-', subid, '/ses-', sesid, '/func/sub-', subid,
         '_ses-', sesid, '_task-chatroom_run-01_space-fsLR_desc-maxpostproc_bold.dscalar.nii')
 cii <- read_cifti(path)
 
-###### Single subject network estimation 
+###### Single subject template estimation 
 print('Single subject map estimation')
-networks_img <- BrainMap(cii, prior, tvar_method = 'unbiased', hpf = 0,
-                scale = 'local', TR = 2.05, scale_sm_FWHM = 2, GSR = FALSE) 
+#networks_img <- BrainMap(cii, prior, tvar_method = 'unbiased', hpf = 0,
+#                scale = 'local', TR = 2.05, scale_sm_FWHM = 2, GSR = FALSE) 
 
-saveRDS(networks_img, paste0(outdir, 'sub-', subid, '/ses-', sesid, '/networks_img.rds'))
+#saveRDS(networks_img, paste0(outdir, 'sub-', subid, '/ses-', sesid, '/networks_img.rds'))
+
+networks_img <- readRDS(paste0(outdir, 'sub-', subid, '/ses-', sesid, '/networks_img.rds'))
 
 ###### Identify areas of engagement and deviation
 print('Identify areas of engagement')
-network_membership <- engagements(networks_img, z = 3, verbose = TRUE, alpha = 0.01, method_p = 'fdr', type = '>')
+network_membership <- engagements(networks_img, z = 1, verbose = TRUE, alpha = 0.01, method_p = 'fdr', type = '>')
 
-saveRDS(network_membership, paste0(outdir, 'sub-', subid, '/ses-', sesid, '/network_membership.rds'))
+saveRDS(network_membership, paste0(outdir, 'sub-', subid, '/ses-', sesid, '/network_membership_z1.rds'))
 
 cii <- move_from_mwall(cii, NA) 
 
@@ -240,4 +242,4 @@ for (net1 in 1:17) {
 print('Output')
 
 write.csv(df, paste0(outdir, 'sub-', subid, '/ses-', sesid, '/sub-', subid, '_ses-', 
-                     sesid, '_surf_network_metrics.csv'), row.names = FALSE)
+                     sesid, '_surf_network_metrics_z1.csv'), row.names = FALSE)
