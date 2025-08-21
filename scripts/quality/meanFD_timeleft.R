@@ -14,7 +14,7 @@ time_df <- read.csv('~/Documents/Northwestern/projects/personalized_versus_group
 fd_df <- read.csv('~/Documents/Northwestern/projects/personalized_versus_group/data/processed/neuroimaging/tabulated/meanFD.csv')
 
 # Calculate time left after nuisance regression in seconds
-time_df$time_left <- (time_df$nTRs - time_df$nRegressors)*2.05
+time_df$time_left <- ((time_df$nTRs - time_df$nRegressors)*2.05)/60
 
 # Calculate number of network metrics missing
 net_df$num_net_missing <- rowSums(is.na(net_df[, 3:ncol(net_df)]))
@@ -34,7 +34,7 @@ cor(df$time_left, df$num_net_missing) #-0.102
 meanFD_hist <- ggplot(df, aes(x = meanFD)) + geom_histogram() + 
                 theme_linedraw() + xlab('Mean FD')
 time_left_hist <- ggplot(df, aes(x = time_left)) + geom_histogram() + 
-                theme_linedraw() + xlab('Time Left (seconds)')
+                theme_linedraw() + xlab('Time Left (minutes)')
 
 # Subset
 df <- df[which(df$meanFD < .5), ]
@@ -43,7 +43,7 @@ df <- df[which(df$meanFD < .5), ]
 meanFD_scat <- ggplot(df, aes(x = num_net_missing, y = meanFD)) + geom_point() + 
                 theme_linedraw() + xlab('# Network Metrics Missing') + ylab('Mean FD')
 time_left_scat <- ggplot(df, aes(x = num_net_missing, y = time_left)) + geom_point() + 
-                theme_linedraw() + xlab('# Network Metrics Missing') + ylab('Time Left (seconds)')
+                theme_linedraw() + xlab('# Network Metrics Missing') + ylab('Time Left (minutes)')
 
 # Correlations
 cor(df$meanFD, df$num_net_missing) #-0.054
