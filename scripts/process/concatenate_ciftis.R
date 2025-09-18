@@ -31,7 +31,7 @@ i = 1
 for (path in paths) {
         cii <- read_cifti(path)
         if (i > 1){
-                cii <- cbind(cii, get(paste0('cii', i-1))) #not sure cbind is right here
+                cii <- merge_xifti(cii, get(paste0('cii', i-1))) 
         }
         assign(paste0('cii', i), cii)
         i = i + 1
