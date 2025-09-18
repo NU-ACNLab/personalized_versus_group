@@ -4,7 +4,7 @@
 ### Yeo networks: https://www.researchgate.net/figure/Network-parcellation-of-Yeos-17-networks-The-17-networks-include-the-following-regions_fig1_352966687#:~:text=The%2017%2Dnetworks%20include%20the%20following%20regions%3A%20N1%3A%20VisCent,N7%3A%20exp_tAttnA%20%2DSalience%2FVentral
 ###
 ### Ellyn Butler
-### August 17, 2025 
+### August 17, 2025 - September 18, 2025
 
 # Load libraries
 library(BayesBrainMap)
@@ -41,9 +41,9 @@ yeo <- readRDS('/projects/b1108/projects/personalized_versus_group/data/processe
 yeo <- resample_cifti(yeo, resamp_res = 10000)
 yeo <- move_from_mwall(yeo, NA) 
 
-###### Load the cifti
+###### Load the ciftis
 path <- paste0(surfdir, 'sub-', subid, '/ses-', sesid, '/func/sub-', subid, 
-        '_ses-', sesid, '_task-chatroom_run-01_space-fsLR_desc-maxpostproc_bold.dscalar.nii')
+        '_ses-', sesid, '_task-all_run-01_space-fsLR_desc-maxpostproc_bold.dscalar.nii')
 cii <- read_cifti(path)
 
 ###### Single subject template estimation 
