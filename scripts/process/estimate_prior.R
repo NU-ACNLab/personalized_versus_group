@@ -46,7 +46,7 @@ sesid <- 1
 for (j in 1:nrow(temp_subjs)) { 
   subid <- temp_subjs[j, 'subid']
   path <- c(system(paste0('find ', indir, 'surf/sub-', subid, '/ses-', sesid, '/func/ ', 
-        '-name "*_task-chatroom_run-01_space-fsLR_desc-maxpostproc_bold.dscalar.nii"'), intern=TRUE))
+        '-name "*_task-all_run-01_space-fsLR_desc-maxpostproc_bold.dscalar.nii"'), intern=TRUE))
   paths <- c(paths, path)
 }
 
@@ -64,7 +64,7 @@ temp <- estimate_prior(
   verbose = TRUE#, usePar=4, wb_path=wb_path
 ) 
 
-saveRDS(temp, paste0(outdir, 'prior.rds'))
+saveRDS(temp, paste0(outdir, 'prior_task-all.rds'))
 
 
 #plot(temp, idx=1:17, fname=paste0('/Users/flutist4129/Documents/Northwestern/projects/personalized_versus_group/plots/temp_maxpostproc_sub-ses2_ses-rand_', 1:17))
