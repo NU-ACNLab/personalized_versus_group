@@ -1,7 +1,7 @@
 ### This script does maximum postprocessing on the task data
 ###
 ### Ellyn Butler
-### July 4, 2025 - September 18, 2025
+### July 4, 2025
 
 ##### Load packages
 library(argparse)
@@ -43,7 +43,7 @@ dscalars <- system(paste0('find ', indir,'surf/sub-', subid, '/ses-', sesid,
             '/func -name "*_space-fsLR_desc-preproc_bold.dscalar.nii"'), intern = TRUE)
 
 ##### GPARC
-GPARC <- readRDS(paste0(indir, 'prior/GPARC.rds'))
+GPARC <- readRDS(paste0(indir, 'template/GPARC.rds'))
 mwall_L <- GPARC$meta$cortex$medial_wall$left
 mwall_R <- GPARC$meta$cortex$medial_wall$right
 
@@ -72,7 +72,16 @@ for (dscalar in dscalars) {
     nT <- nrow(x)
     nV <- ncol(x)
 
-    # Motion regressors
+    # Flagging
+    dv <- DVARS(x)
+    dv_flag <- dv$outlier_flag$Dual
+    dv_nS <- sum(dv_flag)
+
+    # One-hot encode outlier flags
+    dv_spikes <- matrix(0, nrow=nT, ncol=dv_nS)
+    dv_spikes[seq(0, dv_nS-1)*nT + which(dv_flag)] <- 1
+
+    # Select motion regressors
     rp <- read.delim(paste0(motdir, 'sub-', subid, '/ses-', sesid, '/func/sub-', subid, 
                     '_ses-', sesid, '_', taskrun, '_desc-confounds_timeseries.tsv'), sep = '\t')
     rp <- rp[, c(paste0('trans_', c('x', 'y', 'z')), paste0('rot_', c('x', 'y', 'z')),
@@ -82,24 +91,10 @@ for (dscalar in dscalars) {
                 paste0('global_signal', c('_derivative1', '_power2', '_derivative1_power2')))]
 
     # Set filtering parameters
-    dct <- dct_bases(nT, dct_convert(nT, TR = 2.05, f = .01)) # .01 Hz HPF, 11
+    dct <- dct_bases(nT, dct_convert(nT, TR=2.05, f=.01)) # .01 Hz HPF, 11
 
-    # First nuisance regression (for the purpose of calculating DVARS on to save degrees of freedom)
-    nreg <- cbind(rp, dct) #note that dv_spikes is not here
-    nreg[nreg == 'n/a'] <- 0
-    x_reg <- nuisance_regression(x, nreg)
-
-    # Flagging on nuisance regressed data
-    dv <- DVARS(x_reg)
-    dv_flag <- dv$outlier_flag$Dual
-    dv_nS <- sum(dv_flag)
-
-    # One-hot encode outlier flags
-    dv_spikes <- matrix(0, nrow=nT, ncol=dv_nS)
-    dv_spikes[seq(0, dv_nS-1)*nT + which(dv_flag)] <- 1
-
-    # Second nuisance regression (actually used)
-    nreg <- cbind(dv_spikes, rp, dct) #note that dv_spikes is here
+    # Nuisance regression
+    nreg <- cbind(dv_spikes, rp, dct)
     nreg[nreg == 'n/a'] <- 0
     x_reg <- nuisance_regression(x, nreg)[!dv_flag,,drop=FALSE]
     cii_out <- cii
