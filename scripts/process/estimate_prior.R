@@ -52,7 +52,7 @@ for (j in 1:nrow(temp_subjs)) {
 
 print('Estimate prior.') 
 temp <- estimate_prior(
-  paths[1:5],
+  paths,
   template = GPARC, 
   hpf = 0, 
   scale = 'local',
