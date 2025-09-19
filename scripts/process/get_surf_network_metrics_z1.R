@@ -31,7 +31,7 @@ print(sesid)
 # Set paths
 #neurodir <- '~/Documents/Northwestern/projects/personalized_versus_group/data/processed/neuroimaging/'
 neurodir <- '/projects/b1108/projects/personalized_versus_group/data/processed/neuroimaging/'
-prior <- readRDS(paste0(neurodir, 'prior/prior.rds'))
+prior <- readRDS(paste0(neurodir, 'prior/prior_task-all.rds'))
 
 surfdir <- paste0(neurodir, 'surf/')
 outdir <- paste0(neurodir, 'surfnet/')
@@ -48,12 +48,10 @@ cii <- read_cifti(path)
 
 ###### Single subject template estimation 
 print('Single subject map estimation')
-#networks_img <- BrainMap(cii, prior, tvar_method = 'unbiased', hpf = 0,
-#                scale = 'local', TR = 2.05, scale_sm_FWHM = 2, GSR = FALSE) 
+networks_img <- BrainMap(cii, prior, tvar_method = 'unbiased', hpf = 0,
+                scale = 'local', scale_sm_FWHM = 2, GSR = FALSE) 
 
-#saveRDS(networks_img, paste0(outdir, 'sub-', subid, '/ses-', sesid, '/networks_img.rds'))
-
-networks_img <- readRDS(paste0(outdir, 'sub-', subid, '/ses-', sesid, '/networks_img.rds'))
+saveRDS(networks_img, paste0(outdir, 'sub-', subid, '/ses-', sesid, '/networks_img.rds'))
 
 ###### Identify areas of engagement and deviation
 print('Identify areas of engagement')

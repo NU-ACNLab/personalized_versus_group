@@ -4,11 +4,13 @@
 ### for use in estimating the prior
 ###
 ### Ellyn Butler
-### July 8, 2025
+### July 8, 2025 - September 18, 2025
 
 indir <- '/projects/b1108/projects/personalized_versus_group/data/processed/neuroimaging/'
 
-df <- read.csv(paste0(indir, '/tabulated/quality_2025-07-08.csv'))
+qual_df <- read.csv(paste0(indir, 'tabulated/quality_2025-09-18.csv'))
+fd_df <- read.csv(paste0(indir, 'tabulated/meanFD_2025-09-18.csv'))
+clin_df <- 
 
 # Select for Chatroom and session 1
 df <- df[df$sesid == 1 & df$taskrun == 'task-chatroom_run-01', ]
