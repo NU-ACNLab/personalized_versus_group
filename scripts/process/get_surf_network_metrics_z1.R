@@ -43,7 +43,7 @@ yeo <- move_from_mwall(yeo, NA)
 
 ###### Load the ciftis
 path <- paste0(surfdir, 'sub-', subid, '/ses-', sesid, '/func/sub-', subid, 
-        '_ses-', sesid, '_task-all_run-01_space-fsLR_desc-maxpostproc_bold.dscalar.nii')
+        '_ses-', sesid, '_task-all_space-fsLR_desc-maxpostproc_bold.dscalar.nii')
 cii <- read_cifti(path)
 
 ###### Single subject template estimation 
