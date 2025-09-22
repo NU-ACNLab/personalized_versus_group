@@ -3,7 +3,7 @@
 ### the processing method
 ###
 ### Ellyn Butler
-### July 10, 2025
+### July 10, 2025 - September 22, 2025
 
 # Load libraries
 library(BayesBrainMap)
@@ -21,34 +21,34 @@ neurodir <- '/projects/b1108/projects/personalized_versus_group/data/processed/n
 plotdir <- '/projects/b1108/projects/personalized_versus_group/plots/'
 
 # Load prior
-prior <- readRDS(paste0(neurodir, 'prior/prior.rds'))
-export_prior(prior, out_fname = paste0(neurodir, 'prior/prior'))
+prior <- readRDS(paste0(neurodir, 'prior/prior_task-all.rds'))
+export_prior(prior, out_fname = paste0(neurodir, 'prior/prior_task-all'))
 
-mean_prior <- read_cifti(paste0(neurodir, 'prior/prior_mean.dscalar.nii'))
-var_prior <- read_cifti(paste0(neurodir, 'prior/prior_var.dscalar.nii'))
+mean_prior <- read_cifti(paste0(neurodir, 'prior/prior_task-all_mean.dscalar.nii'))
+var_prior <- read_cifti(paste0(neurodir, 'prior/prior_task-all_var.dscalar.nii'))
 
 # Define ICs
 for (i in 1:17) {
     mt <- select_xifti(mean_prior, i)
     vt <- select_xifti(var_prior, i)
-    assign(paste0('IC', i, '_mean'), mt) 
-    assign(paste0('IC', i, '_var'), vt) 
+    assign(paste0('IC', i, '_task-all_mean'), mt) 
+    assign(paste0('IC', i, '_task-all_var'), vt) 
 }
 
 ##### Means
 # Export plots
 for (i in 1:17) {
-    plot(get(paste0('IC', i, '_mean')), fname=paste0(plotdir, 'IC', i, '_mean'))
+    plot(get(paste0('IC', i, '_task-all_mean')), fname=paste0(plotdir, 'IC', i, '_task-all_mean'))
 }
 
 # Load plots
 for (i in 1:17) {
-    mt <- get(paste0('IC', i, '_mean'))
-    plott <- readPNG(paste0(plotdir, 'IC', i, '_mean.png'))
+    mt <- get(paste0('IC', i, '_task-all_mean'))
+    plott <- readPNG(paste0(plotdir, 'IC', i, '_task-all_mean.png'))
     assign(mt$meta$cifti$names, plott)
 }
 
-pdf(paste0(plotdir, 'IC_mean.pdf'), width = 9, height = 10)
+pdf(paste0(plotdir, 'IC_task-all_mean.pdf'), width = 9, height = 10)
 grid.arrange(arrangeGrob(rasterGrob(VisCent), top = 'VisCent'), 
              arrangeGrob(rasterGrob(VisPeri), top = 'VisPeri'), 
              arrangeGrob(rasterGrob(SomMotA), top = 'SomMotA'), 
@@ -72,17 +72,17 @@ dev.off()
 ##### Variances
 # Export plots
 for (i in 1:17) {
-    plot(get(paste0('IC', i, '_var')), fname=paste0(plotdir, 'IC', i, '_var'))
+    plot(get(paste0('IC', i, '_task-all_var')), fname=paste0(plotdir, 'IC', i, '_task-all_var'))
 }
 
 # Load plots
 for (i in 1:17) {
-    vt <- get(paste0('IC', i, '_var'))
-    plott <- readPNG(paste0(plotdir, 'IC', i, '_var.png'))
+    vt <- get(paste0('IC', i, '_task-all_var'))
+    plott <- readPNG(paste0(plotdir, 'IC', i, '_task-all_var.png'))
     assign(vt$meta$cifti$names, plott)
 }
 
-pdf(paste0(plotdir, 'IC_var.pdf'), width = 9, height = 10)
+pdf(paste0(plotdir, 'IC_task-all_var.pdf'), width = 9, height = 10)
 grid.arrange(arrangeGrob(rasterGrob(VisCent), top = 'VisCent'), 
              arrangeGrob(rasterGrob(VisPeri), top = 'VisPeri'), 
              arrangeGrob(rasterGrob(SomMotA), top = 'SomMotA'), 
