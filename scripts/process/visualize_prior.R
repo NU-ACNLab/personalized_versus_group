@@ -72,7 +72,7 @@ dev.off()
 ##### Variances
 # Export plots
 for (i in 1:17) {
-    plot(get(paste0('IC', i, '_task-all_var')), fname=paste0(plotdir, 'IC', i, '_task-all_var'))
+    plot(get(paste0('IC', i, '_task-all_var')), fname=paste0(plotdir, 'IC', i, '_task-all_var'), zlim = c(0, 0.07))
 }
 
 # Load plots

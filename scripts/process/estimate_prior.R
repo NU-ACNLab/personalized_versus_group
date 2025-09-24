@@ -58,7 +58,7 @@ temp <- estimate_prior(
   scale = 'local',
   brainstructures = c('left', 'right'),
   GSR = FALSE,
-  FC = TRUE,
+  FC = FALSE,
   scale_sm_surfL = load_surf('left'),
   scale_sm_surfR = load_surf('right'), 
   verbose = TRUE#, usePar=4, wb_path=wb_path
