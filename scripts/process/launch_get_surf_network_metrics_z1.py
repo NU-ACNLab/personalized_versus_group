@@ -41,7 +41,7 @@ for subdir in subdirs:
                             #subid + '_ses-1_surf_network_metrics_z1.csv'):
     cmd = ['Rscript /projects/b1108/projects/personalized_versus_group/scripts/process/get_surf_network_metrics_z1.R -s', subid, '-e 1']
     get_surf_network_metrics_script = launchdir+sub+'_'+ses+'_get_surf_network_metrics_z1_run.sh'
-    os.system('cat /projects/b1108/projects/personalized_versus_group/scripts/process/sbatchinfo_9hr_10G_general.sh > '+get_surf_network_metrics_script)
+    os.system('cat /projects/b1108/projects/personalized_versus_group/scripts/process/sbatchinfo_12hr_10G_general.sh > '+get_surf_network_metrics_script)
     os.system('echo module purge >> '+get_surf_network_metrics_script)
     os.system('echo module load gdal/3.1.3-R-4.1.1 proj/7.1.1 geos/3.8.1 gsl/2.6-gcc-8.4.0 >> '+get_surf_network_metrics_script)
     os.system('echo module load R/4.3.0 >> '+get_surf_network_metrics_script)
