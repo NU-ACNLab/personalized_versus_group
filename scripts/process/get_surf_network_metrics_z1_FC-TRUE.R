@@ -31,7 +31,7 @@ print(sesid)
 # Set paths
 #neurodir <- '~/Documents/Northwestern/projects/personalized_versus_group/data/processed/neuroimaging/'
 neurodir <- '/projects/b1108/projects/personalized_versus_group/data/processed/neuroimaging/'
-prior <- readRDS(paste0(neurodir, 'prior/prior_task-all_FC.rds'))
+prior <- readRDS(paste0(neurodir, 'prior/prior_task-all_FC-TRUE.rds'))
 
 surfdir <- paste0(neurodir, 'surf/')
 outdir <- paste0(neurodir, 'tmp/')

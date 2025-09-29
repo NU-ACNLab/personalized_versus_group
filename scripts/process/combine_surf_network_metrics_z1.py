@@ -2,11 +2,12 @@
 ### into one master csv
 ###
 ### Ellyn Butler
-### August 17, 2025 - September 24, 2025
+### August 17, 2025 - September 29, 2025
 
 import glob
 import csv
 import pandas as pd
+import os
 from datetime import datetime
 
 basedir = '/projects/b1108/projects/personalized_versus_group/data/processed/neuroimaging'
