@@ -44,7 +44,7 @@ for (i in 1:nrow(gi_df)) {
 }
 gi_df$p_fdr <- p.adjust(gi_df$p, method = 'fdr')
 gi_df[gi_df$p_fdr < .05, ] #none significant
-gi_df[gi_df$p < .05, ] #38
+gi_df[gi_df$p < .05, ] #21
 gi_df[gi_df$p < .01, ] #5
 
 gi_df$Comparison <- 'Group vs. Intersection'
@@ -87,8 +87,8 @@ for (i in 1:nrow(pi_df)) {
 }
 pi_df$p_fdr <- p.adjust(pi_df$p, method = 'fdr')
 pi_df[pi_df$p_fdr < .05, ] #none significant
-pi_df[pi_df$p < .05, ] #38
-pi_df[pi_df$p < .01, ] #12
+pi_df[pi_df$p < .05, ] #37
+pi_df[pi_df$p < .01, ] #5
 
 pi_df$Comparison <- 'Personalized vs. Intersection'
 
@@ -109,72 +109,34 @@ comb_df <- rbind(
     gi_group_df2, gi_int_df2, pi_pers_df2, pi_int_df2
 )
 
-comb_df$Clinical <- recode(comb_df$Clinical, 
-                            'bdi_sum' = 'Depression',
-                            'punishment' = 'Sensitivity to Punishment',
+comb_df$Clinical <- recode(comb_df$Clinical, 'punishment' = 'Sensitivity to Punishment',
                             'reward' = 'Sensitivity to Reward',
-                            'rrs_sum' = 'Ruminative Coping Style'
-                        )
+                            'rrs_sum' = 'Ruminative Coping Style')
 
 comb_df$Method <- ordered(comb_df$Method, c('Group', 'Intersection', 'Personalized'))
 
 comb_df$Connectivity <- recode(comb_df$Connectivity, 
-                            'FC_int_visualb_limbica_pos' = 'Visual B - Limbic A',   
-                            'FC_int_dorsalattentionb_defaulta_pos' = 'Dorsal Attention B - Default A',
-                            'FC_int_limbica_temporalparietal_pos' = 'Limbic A - Temporal Parietal',
-                            'FC_int_saliencea_pos' = 'Salience A',            
-                            'FC_int_visuala_defaultc_pos' = 'Visual A - Default C',      
-                            'FC_int_dorsalattentiona_defaultc_pos' = 'Dorsal Attention A - Default C',
-                            'FC_int_salienceb_defaultc_pos' = 'Salience B - Default C',    
-                            'FC_int_controla_temporalparietal_pos' = 'Control A - Temporal Parietal',
-                            'FC_int_defaultb_defaultc_pos' = 'Default B - Default C',    
-                            'FC_int_limbica_pos' = 'Limbic A',                
-                            'FC_int_visuala_visualb_pos' = 'Visual A - Visual B',      
-                            'FC_int_limbicb_controla_pos' = 'Limbic B - Control A',        
-                            'FC_int_limbicb_defaultb_pos' = 'Limbic B - Default B',    
-                            'FC_int_visuala_somatomotorb_pos' = 'Visual A - Somatomotor B',
-                            'FC_int_visualb_defaultb_pos' = 'Visual B - Default B',       
-                            'FC_int_visualb_temporalparietal_pos' = 'Visual B - Temporal Parietal'
+                            'FC_int_somatomotorb_defaultc_pos' = 'Somatomotor B - Default C',
+                            'FC_int_somatomotorb_controla_pos' = 'Somatomotor B - Control A',
+                            'FC_int_saliencea_controla_pos' = 'Salience A - Control A', 
+                            'FC_int_salienceb_defaulta_pos' = 'Salience B - Default A',
+                            'FC_int_controlc_defaultb_pos' = 'Control C - Default B',
+                            'FC_int_dorsalattentiona_controlc_pos' = 'Dorsal Attention A - Control C',
+                            'FC_int_visuala_defaulta_pos' = 'Visual A - Default A',
+                            'FC_int_dorsalattentionb_controlb_pos' = 'Dorsal Attention B - Control B',
+                            'FC_int_saliencea_defaultb_pos' = 'Salience A - Default B',
+                            'FC_int_controla_pos' = 'Control A'
                         )
 
-comb_df$Connectivity_Clinical <- interaction(comb_df$Connectivity, comb_df$Clinical, sep = " | ")
+plot1 <- ggplot(comb_df, aes(x = Connectivity, y = r, color = Clinical, shape = Method)) +
+            theme_linedraw() + geom_hline(yintercept = 0, linetype = 'dashed') + 
+            geom_line(aes(group = Connectivity), color = 'black', linewidth = 0.5) +
+            geom_point(size = 5, stat = 'identity') + ylim(-0.2, 0.2) + 
+            facet_grid(cols = vars(Comparison), scales = 'free_x', space = 'free_x') + 
+            scale_x_discrete(guide = guide_axis(angle = 45)) + 
+            ylab('Correlation between Clinical and Connectivity') +
+            theme(legend.position = 'bottom', legend.box = 'vertical') 
 
-plot1 <- ggplot(comb_df, aes(
-    x = Connectivity_Clinical,
-    y = r,
-    color = Clinical,
-    shape = Method
-  )) +
-  theme_linedraw() +
-  geom_hline(yintercept = 0, linetype = 'dashed') +
-  geom_line(aes(group = Connectivity_Clinical), color = 'black', linewidth = 0.5) +
-  geom_point(size = 5) +
-  ylim(-0.2, 0.2) +
-  facet_grid(cols = vars(Comparison), scales = 'free_x', space = 'free_x') +
-  scale_x_discrete(
-    guide = guide_axis(angle = 60),
-    labels = c('Dorsal Attention B - Default A', 
-               'Limbic A - Temporal Parietal', 
-               'Visual B - Limbic A', 
-               'Salience A',
-               'Visual B - Limbic A',
-               'Limbic A',
-               'Control A - Temporal Parietal',
-               'Default B - Default C',
-               'Dorsal Attention A - Default C',
-               'Salience B - Default C',
-               'Visual A - Default C',
-               'Limbic B - Control A',
-               'Limbic B - Default B',
-               'Visual A - Visual B',
-               'Visual A - Somatomotor B',
-               'Visual B - Default B',
-               'Visual B - Temporal Parietal')
-  ) +
-  ylab('Correlation between Clinical and Connectivity') +
-  xlab('Connectivity') + 
-  theme(legend.position = 'bottom', legend.box = 'vertical')
-
-png(paste0('~/Documents/Northwestern/projects/personalized_versus_group/plots/effect_size_comparisons_', format(Sys.Date()),'.png'), width = 3000, height = 1800, res = 300)
+png(paste0('~/Documents/Northwestern/projects/personalized_versus_group/plots/effect_size_comparisons_', format(Sys.Date()),'.png'), width = 2500, height = 1800, res = 300)
 plot1
 dev.off()
