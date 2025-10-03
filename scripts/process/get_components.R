@@ -110,24 +110,3 @@ save.image('/projects/b1108/projects/personalized_versus_group/data/processed/ne
        #   must be between ‘0’ and ‘p = ncol(x)’.
 
 
-
-
-
-
-
-
-
-
-
-
-
-vec_list <- mget(paste0('vec', 1:nrow(temp_subjs)))
-xmat <- do.call(rbind, vec_list)
-
-# Center across subjects (rows are subjects)
-xmat <- scale(xmat, center = TRUE, scale = FALSE)
-
-# XX'
-xxtransmat <- crossprod(xmat) # should be 315622 by 315622... which would be 742.2 GB, so we got to split by network
-
-# U 
