@@ -2,7 +2,7 @@
 ### engagement maps via singular value decomposition
 ###
 ### Ellyn Butler
-### October 2, 2025 - October 13, 2025
+### October 15, 2025 - 
 
 set.seed(1432)
 
@@ -14,6 +14,9 @@ ciftiTools.setOption('wb_path', '/projects/b1108/software/workbench')
 
 # Directories
 indir <- '/projects/b1108/projects/personalized_versus_group/data/processed/neuroimaging/'
+
+# Load prior
+prior <- readRDS(paste0(indir, 'prior/prior_task-all.rds'))
 
 # Load data
 temp_subjs <- read.csv(paste0(indir, 'tabulated/prior_subjects_2025-09-19.csv'))
@@ -34,8 +37,19 @@ netnames <- c('VisCent', 'VisCeri', 'SomMotA', 'SomMotB', 'DorsAttnA',
               'LimbicB', 'ContA', 'ContB', 'ContC', 'DefaultA',
               'DefaultB', 'DefaultC', 'TempPar')
 for (j in 1:17) {
+  # Get the prior mean and sd for this network
+  # (mean - mean of the engagement values for a particular network)
+  # (sd - sd of the engagement values for a particular network)
+  mthresh <- mean(prior$prior$mean[,j])
+  sdthresh <- sd(prior$prior$mean[,j])
+  thresh <- mthresh + 2*sdthresh
+
+  # Create the matrix of subjects' vertices for this network
   vec_list <- mget(paste0('vec_i', 1:nrow(temp_subjs), '_j', j))
   xmat <- do.call(rbind, vec_list)
+
+  # Threshold
+  xmat[xmat < thresh] <- 0
 
   # Center across subjects (rows are subjects)
   xmat <- scale(xmat, center = TRUE, scale = FALSE)
@@ -51,11 +65,11 @@ for (j in 1:17) {
 
   # D (# of components by # of components)... just changes scale of columns if post-multiply with U
   dvec <- sqrt(svd_out$d)
-  dmat <- diag(dvec) #QUESTION: Getting an NaN here... What is that about? Result of centering... but we still want to center?
+  dmat <- diag(dvec) 
 
   # V' (# of components by # of vertices) 
   vtransmat <- diag(1/dvec) %*% t(umat) %*% xmat 
-  write.csv(vtransmat[1:20, ], paste0(indir, 'components/', netnames[j], '.csv'), row.names = FALSE)
+  write.csv(vtransmat[1:20, ], paste0(indir, 'components/', netnames[j], '_thresholded.csv'), row.names = FALSE)
 
   # Total variance
   totvar <- sum(dmat[!is.na(dmat)]^2)
@@ -70,33 +84,12 @@ for (j in 1:17) {
                   variance_explained = varex,
                   cumulative_variance_explained = cumsum(varex))
 
-  write.csv(df, paste0(indir, 'tabulated/variance_explained_j', j, '_svd.csv'), row.names = FALSE)
+  write.csv(df, paste0(indir, 'tabulated/variance_explained_thresholded_j', j, '_svd.csv'), row.names = FALSE)
 
   # Get scores for each subject
-  write.csv(umat, paste0(indir, 'tabulated/component_scores_', netnames[j], '_svd.csv'), row.names = FALSE)
+  write.csv(umat, paste0(indir, 'tabulated/component_scores_thresholded_', netnames[j], '_svd.csv'), row.names = FALSE)
 }
 
 # Save workspace for future tinkering (delete/modify later)
-save.image('/projects/b1108/projects/personalized_versus_group/data/processed/neuroimaging/tmp/svd_by_network.RData')
-#load('/projects/b1108/projects/personalized_versus_group/data/processed/neuroimaging/tmp/svd.RData')
-
-# Score subjects
-
-
-# svd() notes
-       #d: a vector containing the singular values of ‘x’, of length
-       #   ‘min(n, p)’, sorted decreasingly.
-
-       #u: a matrix whose columns contain the left singular vectors of
-       #   ‘x’, present if ‘nu > 0’.  Dimension ‘c(n, nu)’.
-
-       #v: a matrix whose columns contain the right singular vectors of
-       #   ‘x’, present if ‘nv > 0’.  Dimension ‘c(p, nv)’.
-
-       #nu: the number of left singular vectors to be computed.  This
-       #   must between ‘0’ and ‘n = nrow(x)’.
-
-       #nv: the number of right singular vectors to be computed.  This
-       #   must be between ‘0’ and ‘p = ncol(x)’.
-
+#save.image('/projects/b1108/projects/personalized_versus_group/data/processed/neuroimaging/tmp/svd_by_network_thresholded.RData')
 
