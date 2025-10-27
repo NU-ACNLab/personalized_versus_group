@@ -2,14 +2,12 @@
 ### engagement maps via singular value decomposition
 ###
 ### Ellyn Butler
-### October 15, 2025 - 
+### October 15, 2025 - October 27, 2025
 
 set.seed(1432)
 
 # Load libraries
-library(ggplot2)
 library(ciftiTools)
-library(ggpubr)
 ciftiTools.setOption('wb_path', '/projects/b1108/software/workbench')
 
 # Directories
