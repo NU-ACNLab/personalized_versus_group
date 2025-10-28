@@ -34,8 +34,8 @@ df <- cbind(temp_subjs[, c('subid', 'sesid')], df)
 write.csv(df, paste0(indir, 'spatial_components_', format(Sys.Date(), "%Y-%m-%d"), '.csv'), row.names = FALSE)
 
 #### FC
-df <- read.csv(paste0(indir, 'component_scores_thresholded_FC_svd.csv'))
-ve <- read.csv(paste0(indir, 'variance_explained_thresholded_FC_svd.csv'))
+df <- read.csv(paste0(indir, 'component_scores_FC_svd.csv'))
+ve <- read.csv(paste0(indir, 'variance_explained_FC_svd.csv'))
 
 # Select for columns that explain at least 1% of the variance
 df <- df[,1:nrow(ve[ve$variance_explained > 0.01,])]
