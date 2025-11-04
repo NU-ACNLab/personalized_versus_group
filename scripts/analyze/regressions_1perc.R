@@ -4,7 +4,7 @@
 ### spatial components
 ###
 ### Ellyn Butler
-### October 16, 2025 - October 27, 2025
+### October 16, 2025 - November 3, 2025
 
 
 # Objective: Determine if group FC explains any variance in 
@@ -15,9 +15,9 @@ set.seed(1000)
 
 # Load data
 indir <- '/projects/b1108/projects/personalized_versus_group/data/processed/neuroimaging/tabulated/'
-comp_df <- read.csv(paste0(indir, 'spatial_components_2025-10-27.csv'))
+comp_df <- read.csv(paste0(indir, 'spatial_components_1perc_2025-11-03.csv'))
 clin_df <- read.csv(paste0(indir, 'prior_subjects_2025-09-19.csv'))
-net_df <- read.csv(paste0(indir, 'FC_components_2025-10-27.csv'))
+net_df <- read.csv(paste0(indir, 'FC_components_1perc_2025-11-03.csv'))
 
 df <- merge(comp_df, clin_df)
 df <- merge(df, net_df)

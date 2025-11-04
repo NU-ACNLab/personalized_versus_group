@@ -2,7 +2,9 @@
 ### make it usable for analyses
 ###
 ### Ellyn Butler
-### August 7, 2025 - 
+### August 7, 2025 - October 30, 2025
+
+# October 30, 2025: Changed the scree plots and psychometrics to just include the full sample
 
 # Load libraries
 library(tidyverse)
@@ -84,15 +86,37 @@ if (all(names(rise_df) == names(crest_df)) == TRUE) {
 
 # Understand
 dim(df) # there are 558 subjects with ses 1 data
-dim(df[complete.cases(df[, c('bdi_1', 'rrs_1', 'spsrq_1', 'psqi_1_hh')]), ] )
-# ^ 434 of these started all of the surveys
+started_screen <- df[complete.cases(df[, c('spsrq_1')]), ]
+# ^ 473 of these started the screening process
+
+write.csv(started_screen, '~/Documents/Northwestern/projects/personalized_versus_group/data/processed/neuroimaging/tabulated/started_screen.csv', row.names = FALSE)
 
 # How much of the BDI, RRS, and SPSRQ do these people have?
+# Num missing BDI
+started_screen - nrow(df[complete.cases(df[, c('subid', 'sesid', paste0('bdi_', 1:21))]), ])
+
+# Num missing RRS
+started_screen - nrow(df[complete.cases(df[, c('subid', 'sesid', paste0('rrs_', 1:10))]), ])
+
+# Num missing SPSRQ
+started_screen - nrow(df[complete.cases(df[, c('subid', 'sesid', paste0('spsrq_', 1:48))]), ])
+
+
 df <- df[complete.cases(df[, c('subid', 'sesid', paste0('bdi_', 1:21), 
             paste0('rrs_', 1:10), paste0('spsrq_', 1:48))]), ]
 dim(df) #391... this is the way to go
 
+
+
+#missing at least one of the clinical measures 
+started_screen - dim(df)
+
+df_full <- df
+
 ####### Calculate summary scores
+
+subjs_df <- read.csv('~/Documents/Northwestern/projects/personalized_versus_group/data/processed/neuroimaging/tabulated/prior_subjects_2025-09-19.csv')
+df <- merge(subjs_df, df)
 
 ### RRS
 rrs_fa1 <- fa(df[, paste0('rrs_', 1:10)], n.factors = 1)
@@ -102,6 +126,9 @@ anova(rrs_fa1, rrs_fa2) # > Implies one factor solution... but weird identical?
 # Factor structure
 cormat <- round(cor(df[, paste0('rrs_', 1:10)]), 2)
 corplot <- ggcorrplot(cormat, lab = TRUE, lab_size = 2) + ggtitle('RRS') #1 factor looks reasonable
+
+alpha(cormat)
+omega(cormat)
 
 eigenvalues1 <- eigen(cormat)$values
 eigen_df1 <- data.frame(matrix(NA, nrow=length(eigenvalues1), ncol=2))
@@ -127,6 +154,9 @@ anova(bdi_fa1, bdi_fa2) # > Implies one factor solution... but weird identical?
 cormat <- round(cor(df[, paste0('bdi_', 1:21)]), 2)
 corplot <- ggcorrplot(cormat, lab = TRUE, lab_size = 2) + ggtitle('BDI') #1 factor looks reasonable
 
+alpha(cormat)
+omega(cormat)
+
 eigenvalues1 <- eigen(cormat)$values
 eigen_df1 <- data.frame(matrix(NA, nrow=length(eigenvalues1), ncol=2))
 names(eigen_df1) <- c('compnum', 'eigen')
@@ -151,6 +181,9 @@ anova(spsrq_fa1, spsrq_fa2) # > Implies one factor solution... but weird identic
 cormat <- round(cor(df[, paste0('spsrq_', 1:48)]), 2)
 corplot <- ggcorrplot(cormat, lab = TRUE, lab_size = 2) + ggtitle('SPSRQ') 
 
+alpha(cormat)
+omega(cormat)
+
 eigenvalues1 <- eigen(cormat)$values
 eigen_df1 <- data.frame(matrix(NA, nrow=length(eigenvalues1), ncol=2))
 names(eigen_df1) <- c('compnum', 'eigen')
@@ -166,10 +199,10 @@ spsrq_scree <- ggplot(eigen_df1, aes(x=compnum, y=eigen)) +
 
 # Sum score
 # https://arc.psych.wisc.edu/self-report/sensitivity-to-punishment-and-reward-questionnaire-spsrq/
-df$punishment <- rowSums(df[, paste0('spsrq_', seq(1, 47, 2))])
-df$reward <- rowSums(df[, paste0('spsrq_', seq(2, 48, 2))])
+df_full$punishment <- rowSums(df_full[, paste0('spsrq_', seq(1, 47, 2))])
+df_full$reward <- rowSums(df_full[, paste0('spsrq_', seq(2, 48, 2))])
 
 ####### Finalize and export
 
-df <- df[, c('subid', 'sesid', 'rrs_sum', 'bdi_sum', 'punishment', 'reward')]
-write.csv(df, paste0('~/Documents/Northwestern/projects/personalized_versus_group/data/processed/clinical/clinical_', format(Sys.Date(), "%Y-%m-%d"), '.csv'), row.names = FALSE)
+df_full <- df_full[, c('subid', 'sesid', 'rrs_sum', 'bdi_sum', 'punishment', 'reward')]
+write.csv(df_full, paste0('~/Documents/Northwestern/projects/personalized_versus_group/data/processed/clinical/clinical_', format(Sys.Date(), "%Y-%m-%d"), '.csv'), row.names = FALSE)
