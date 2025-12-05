@@ -12,3 +12,5 @@ publication/*
 notes/*
 *.rds
 *.csv
+*.RData
+*.Rhistory
