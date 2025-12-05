@@ -4,7 +4,7 @@
 ### Yeo networks: https://www.researchgate.net/figure/Network-parcellation-of-Yeos-17-networks-The-17-networks-include-the-following-regions_fig1_352966687#:~:text=The%2017%2Dnetworks%20include%20the%20following%20regions%3A%20N1%3A%20VisCent,N7%3A%20exp_tAttnA%20%2DSalience%2FVentral
 ###
 ### Ellyn Butler
-### August 17, 2025 - September 18, 2025
+### August 17, 2025 - December 5, 2025
 
 # Load libraries
 library(BayesBrainMap)
@@ -119,6 +119,7 @@ for (net1 in 1:17) {
         df[, paste0('FC_pers_', networks[net1], '_pos')] <- FC_pos
 
         ###### Estimate personalized between network connectivity
+        # December 5, 2025: Began to modify between network connectivities to average time series
         print('Estimate personalized between network connectivity')
 
         for (net2 in (net1+1):17) {
@@ -127,19 +128,26 @@ for (net1 in 1:17) {
                         mask_pos2 <- as.matrix(network_membership$engaged)[, net2] > 0 
 
                         if (sum(mask_pos2, na.rm=TRUE) < 2) { next }
-                        FC_net1_net2_pos <- cor(t(as.matrix(cii)[which(mask_pos),]), 
-                                t(as.matrix(cii)[which(mask_pos2),])) 
-                        FC_pos <- 0
-                        denom <- 0
+                        mat1 <- as.matrix(cii)[which(mask_pos),] #rows are vertices, columns are TRs
+                        mat2 <- as.matrix(cii)[which(mask_pos2),]
+                        T1 <- 0
+                        T2 <- 0
+                        T1_denom <- 0
+                        T2_denom <- 0
                         net2_sa <- sa[which(mask_pos2)]
                         net2_eng <- as.matrix(pos_lvl_cii)[which(mask_pos2), net2]
-                        for (i in 1:nrow(FC_net1_net2_pos)) {
-                                for (j in 1:ncol(FC_net1_net2_pos)) {
-                                        FC_pos <- FC_pos + (net1_sa[i]*net1_eng[i]*net2_sa[j]*net2_eng[j]*FC_net1_net2_pos[i, j])
-                                        denom <- denom + net1_sa[i]*net1_eng[i]*net2_sa[j]*net2_eng[j]
-                                }
+                        # Net 1
+                        for (i in 1:nrow(mat1)) {
+                                T1 <- T1 + (net1_sa[i]*net1_eng[i]*mat1[i, ])
+                                T1_denom <- T1_denom + net1_sa[i]*net1_eng[i]
                         }
-                        FC_pos <- FC_pos/denom
+                        # Net 2
+                        for (i in 1:nrow(mat2)) {
+                                T2 <- T2 + (net2_sa[i]*net2_eng[i]*mat2[i, ])
+                                T2_denom <- T2_denom + net2_sa[i]*net2_eng[i]
+                        }
+
+                        FC_pos <- cor(T1/T1_denom, T2/T2_denom)
                         df[, paste0('FC_pers_', networks[net1], '_', networks[net2], '_pos')] <- FC_pos
                 }
         } 
@@ -168,22 +176,32 @@ for (net1 in 1:17) {
 
         for (net2 in (net1+1):17) {
                 if (net2 < 18 & net1 != net2) {
+                        # Check to make sure some vertices actually belong to net2
                         mask_pos2 <- as.matrix(yeo) == net2
-                        FC_net1_net2_pos <- cor(t(as.matrix(cii)[which(mask_pos),]), 
-                                t(as.matrix(cii)[which(mask_pos2),])) 
-                        FC_pos <- 0
-                        denom <- 0
+
+                        if (sum(mask_pos2, na.rm=TRUE) < 2) { next }
+                        mat1 <- as.matrix(cii)[which(mask_pos),] #rows are vertices, columns are TRs
+                        mat2 <- as.matrix(cii)[which(mask_pos2),]
+                        T1 <- 0
+                        T2 <- 0
+                        T1_denom <- 0
+                        T2_denom <- 0
                         net2_sa <- sa[which(mask_pos2)]
-                        for (i in 1:nrow(FC_net1_net2_pos)) {
-                                for (j in 1:ncol(FC_net1_net2_pos)) {
-                                        FC_pos <- FC_pos + (net1_sa[i]*net2_sa[j]*FC_net1_net2_pos[i, j])
-                                        denom <- denom + net1_sa[i]*net2_sa[j]
-                                }
+                        # Net 1
+                        for (i in 1:nrow(mat1)) {
+                                T1 <- T1 + (net1_sa[i]*mat1[i, ])
+                                T1_denom <- T1_denom + net1_sa[i]
                         }
-                        FC_pos <- FC_pos/denom
+                        # Net 2
+                        for (i in 1:nrow(mat2)) {
+                                T2 <- T2 + (net2_sa[i]*mat2[i, ])
+                                T2_denom <- T2_denom + net2_sa[i]
+                        }
+
+                        FC_pos <- cor(T1/T1_denom, T2/T2_denom)
                         df[, paste0('FC_group_', networks[net1], '_', networks[net2], '_pos')] <- FC_pos
                 }
-        } #correct up to here now
+        } 
 
         ###### Estimate intersection within network connectivity
         print('Estimate intersection within network connectivity')
@@ -218,22 +236,29 @@ for (net1 in 1:17) {
                         mask_pos2 <- mask_pos2*as.matrix(yeo) == net2 
 
                         if (sum(mask_pos2, na.rm=TRUE) < 2) { next }
-                        FC_net1_net2_pos <- cor(t(as.matrix(cii)[which(mask_pos),]), 
-                                t(as.matrix(cii)[which(mask_pos2),])) 
-                        FC_pos <- 0
-                        denom <- 0
+                        mat1 <- as.matrix(cii)[which(mask_pos),] #rows are vertices, columns are TRs
+                        mat2 <- as.matrix(cii)[which(mask_pos2),]
+                        T1 <- 0
+                        T2 <- 0
+                        T1_denom <- 0
+                        T2_denom <- 0
                         net2_sa <- sa[which(mask_pos2)]
                         net2_eng <- as.matrix(pos_lvl_cii)[which(mask_pos2), net2]
-                        for (i in 1:nrow(FC_net1_net2_pos)) {
-                                for (j in 1:ncol(FC_net1_net2_pos)) {
-                                        FC_pos <- FC_pos + (net1_sa[i]*net1_eng[i]*net2_sa[j]*net2_eng[j]*FC_net1_net2_pos[i, j])
-                                        denom <- denom + net1_sa[i]*net1_eng[i]*net2_sa[j]*net2_eng[j]
-                                }
+                        # Net 1
+                        for (i in 1:nrow(mat1)) {
+                                T1 <- T1 + (net1_sa[i]*net1_eng[i]*mat1[i, ])
+                                T1_denom <- T1_denom + net1_sa[i]*net1_eng[i]
                         }
-                        FC_pos <- FC_pos/denom
+                        # Net 2
+                        for (i in 1:nrow(mat2)) {
+                                T2 <- T2 + (net2_sa[i]*net2_eng[i]*mat2[i, ])
+                                T2_denom <- T2_denom + net2_sa[i]*net2_eng[i]
+                        }
+
+                        FC_pos <- cor(T1/T1_denom, T2/T2_denom)
                         df[, paste0('FC_int_', networks[net1], '_', networks[net2], '_pos')] <- FC_pos
                 }
-        }   
+        } 
 }
 
 ###### Output the data
