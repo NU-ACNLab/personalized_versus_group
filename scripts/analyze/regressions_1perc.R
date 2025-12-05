@@ -11,8 +11,6 @@
 # clinical metrics above and beyond spatial features.
 
 
-set.seed(1000)
-
 # Load data
 indir <- '/projects/b1108/projects/personalized_versus_group/data/processed/neuroimaging/tabulated/'
 comp_df <- read.csv(paste0(indir, 'spatial_components_1perc_2025-11-03.csv'))

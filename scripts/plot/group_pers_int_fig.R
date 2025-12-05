@@ -2,7 +2,7 @@
 ### maps for two networks
 ###
 ### Ellyn Butler
-### August 21, 2025
+### August 21, 2025 - December 4, 2025
 
 # Load libraries
 library(ciftiTools)
@@ -40,10 +40,14 @@ netimg$subjNet_mean$data$cortex_left[netimg$subjNet_mean$data$cortex_left == 0] 
 netimg$subjNet_mean$data$cortex_right[netimg$subjNet_mean$data$cortex_right == 0] <- NA
 
 # Default A
-view_xifti_surface(netimg$subjNet_mean, idx = 14, zlim = c(0, .8))
+view_xifti_surface(netimg$subjNet_mean, idx = 14, zlim = c(0, .8), 
+    fname = '~/Documents/Northwestern/projects/personalized_versus_group/plots/sub-50002_defaultA_pers', 
+    legend_embed = FALSE)
 
 # Somatomotor B
-view_xifti_surface(netimg$subjNet_mean, idx = 4, zlim = c(0, .8))
+view_xifti_surface(netimg$subjNet_mean, idx = 4, zlim = c(0, .8), 
+    fname = '~/Documents/Northwestern/projects/personalized_versus_group/plots/sub-50002_somatomotorB_pers', 
+    legend_embed = FALSE)
 
 ### C. Intersection
 # Default A
@@ -51,12 +55,16 @@ netimg_da <- netimg
 netimg_da$subjNet_mean$data$cortex_left[, 14] <- netimg_da$subjNet_mean$data$cortex_left[,14]*(yeo$data$cortex_left == 14)
 netimg_da$subjNet_mean$data$cortex_right[, 14] <- netimg_da$subjNet_mean$data$cortex_right[,14]*(yeo$data$cortex_right == 14)
 
-view_xifti_surface(netimg_da$subjNet_mean, idx = 14, zlim = c(0, .8))
+view_xifti_surface(netimg_da$subjNet_mean, idx = 14, zlim = c(0, .8), 
+    fname = '~/Documents/Northwestern/projects/personalized_versus_group/plots/sub-50002_defaultA_int', 
+    legend_embed = FALSE)
 
 # Somatomotor B
 netimg_sb <- netimg
 netimg_sb$subjNet_mean$data$cortex_left[, 4] <- netimg_sb$subjNet_mean$data$cortex_left[,4]*(yeo$data$cortex_left == 4)
 netimg_sb$subjNet_mean$data$cortex_right[, 4] <- netimg_sb$subjNet_mean$data$cortex_right[,4]*(yeo$data$cortex_right == 4)
 
-view_xifti_surface(netimg_sb$subjNet_mean, idx = 4, zlim = c(0, .8))
+view_xifti_surface(netimg_sb$subjNet_mean, idx = 4, zlim = c(0, .8), 
+    fname = '~/Documents/Northwestern/projects/personalized_versus_group/plots/sub-50002_somatomotorB_int', 
+    legend_embed = FALSE)
 
