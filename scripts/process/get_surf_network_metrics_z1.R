@@ -48,16 +48,24 @@ cii <- read_cifti(path)
 
 ###### Single subject template estimation 
 print('Single subject map estimation')
-networks_img <- BrainMap(cii, prior, tvar_method = 'unbiased', hpf = 0,
-                scale = 'local', scale_sm_FWHM = 2, GSR = FALSE) 
+if (file.exists(paste0(outdir, 'sub-', subid, '/ses-', sesid, '/networks_img.rds'))) {
+        networks_img <- readRDS(paste0(outdir, 'sub-', subid, '/ses-', sesid, '/networks_img.rds'))
+} else {
+        networks_img <- BrainMap(cii, prior, tvar_method = 'unbiased', hpf = 0,
+                        scale = 'local', scale_sm_FWHM = 2, GSR = FALSE) 
 
-saveRDS(networks_img, paste0(outdir, 'sub-', subid, '/ses-', sesid, '/networks_img.rds'))
+        saveRDS(networks_img, paste0(outdir, 'sub-', subid, '/ses-', sesid, '/networks_img.rds'))
+}
 
 ###### Identify areas of engagement and deviation
 print('Identify areas of engagement')
-network_membership <- engagements(networks_img, z = 1, verbose = TRUE, alpha = 0.01, method_p = 'fdr', type = '>')
+if (file.exists(paste0(outdir, 'sub-', subid, '/ses-', sesid, '/network_membership_z1.rds'))) {
+        network_membership <- readRDS(paste0(outdir, 'sub-', subid, '/ses-', sesid, '/network_membership_z1.rds'))
+} else {
+        network_membership <- engagements(networks_img, z = 1, verbose = TRUE, alpha = 0.01, method_p = 'fdr', type = '>')
 
-saveRDS(network_membership, paste0(outdir, 'sub-', subid, '/ses-', sesid, '/network_membership_z1.rds'))
+        saveRDS(network_membership, paste0(outdir, 'sub-', subid, '/ses-', sesid, '/network_membership_z1.rds'))
+}
 
 cii <- move_from_mwall(cii, NA) 
 
