@@ -1,7 +1,7 @@
 ### Merge all data types for final sample
 ###
 ### Ellyn Butler
-### August 17, 2025 - September 29, 2025
+### August 17, 2025 - December 13, 2025
 
 # Load libraries
 library(tidyverse)
@@ -9,7 +9,7 @@ library(tidyverse)
 # Load data
 clin_df <- read.csv('~/Documents/Northwestern/projects/personalized_versus_group/data/processed/clinical/clinical_2025-08-11.csv')
 demo_df <- read.csv('~/Documents/Northwestern/projects/personalized_versus_group/data/processed/demographic/demographic_2025-08-11.csv')
-net_df <- read.csv('~/Documents/Northwestern/projects/personalized_versus_group/data/processed/neuroimaging/tabulated/surf_network_metrics_z1_2025-09-29.csv') 
+net_df <- read.csv('~/Documents/Northwestern/projects/personalized_versus_group/data/processed/neuroimaging/tabulated/surf_network_metrics_z1_2025-12-13.csv') 
 prior_df <- read.csv('~/Documents/Northwestern/projects/personalized_versus_group/data/processed/neuroimaging/tabulated/prior_subjects_2025-09-19.csv') 
 # ^MUST INCLUDE THIS! The surf network metrics file includes subjects from a previous round of processing who must be excluded
 

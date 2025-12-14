@@ -2,7 +2,7 @@
 ### group functional connectivity estimates
 ###
 ### Ellyn Butler
-### October 27, 2025 
+### October 27, 2025 - December 14, 2025
 
 set.seed(1432)
 
@@ -12,7 +12,7 @@ indir <- '/projects/b1108/projects/personalized_versus_group/data/processed/neur
 # Load data
 comp_df <- read.csv(paste0(indir, 'tabulated/components_2025-10-20.csv'))
 clin_df <- read.csv(paste0(indir, 'tabulated/prior_subjects_2025-09-19.csv'))
-net_df <- read.csv(paste0(indir, 'tabulated/surf_network_metrics_z1_2025-09-29.csv'))
+net_df <- read.csv(paste0(indir, 'tabulated/surf_network_metrics_z1_2025-12-13.csv'))
 
 df1 <- merge(comp_df, clin_df)
 df1 <- merge(df1, net_df)
