@@ -57,6 +57,11 @@ gi_int_df2$Method <- 'Intersection'
 gi_int_df2 <- gi_int_df2[, c('Comparison', 'Method', 'Clinical', 'int', 'r13')]
 names(gi_int_df2) <- c('Comparison', 'Method', 'Clinical', 'Connectivity', 'r')
 
+# Is the magnitude of the association between intersection and clinical
+# larger than the magnitude of the association between group and clinical
+# on average?
+mean(abs(gi_df$r13) - abs(gi_df$r12))
+
 # B. Personalized versus intersection
 pers <- gsub('group', 'pers', group)
 
@@ -100,6 +105,11 @@ pi_int_df2$Method <- 'Intersection'
 pi_int_df2 <- pi_int_df2[, c('Comparison', 'Method', 'Clinical', 'int', 'r13')]
 names(pi_int_df2) <- c('Comparison', 'Method', 'Clinical', 'Connectivity', 'r')
 
+# Is the magnitude of the association between personalized and clinical
+# larger than the magnitude of the association between intersection and clinical
+# on average?
+mean(abs(pi_df$r12) - abs(pi_df$r13))
+
 # C. Group versus Personalized
 gp_df <- data.frame(Clinical = c(rep('rrs_sum', length(group)), 
                               rep('bdi_sum', length(group)), 
@@ -140,6 +150,11 @@ gp_pers_df2 <- gp_df2[, c('Comparison', 'Clinical', 'pers', 'r13')]
 gp_pers_df2$Method <- 'Personalized'
 gp_pers_df2 <- gp_pers_df2[, c('Comparison', 'Method', 'Clinical', 'pers', 'r13')]
 names(gp_pers_df2) <- c('Comparison', 'Method', 'Clinical', 'Connectivity', 'r')
+
+# Is the magnitude of the association between group and clinical
+# larger than the magnitude of the association between personalized and clinical
+# on average?
+mean(abs(gp_df$r12) - abs(gp_df$r13))
 
 # D. Plotting
 comb_df <- rbind(
@@ -194,29 +209,29 @@ plot1 <- ggplot(comb_df, aes(
   geom_point(size = 5) +
   ylim(-0.2, 0.2) +
   facet_grid(cols = vars(Comparison), scales = 'free_x', space = 'free_x') +
-  scale_shape_manual(values = c(15, 16, 18))+
+  scale_shape_manual(values = c(15, 16, 18)) +
   scale_x_discrete(
     guide = guide_axis(angle = 60),
-    labels = c('Visual B - Limbic A',
-               'Salience A',
-               'Dorsal Attention A - Default C',
-               'Somatomotor B - Salience B',
-               'Visual B - Limbic A',
-               'Salience A',
-               'Limbic A',
-               'Limbic A',
-               'Default B - Default C',
-               'Dornsal Attention A - Default C',
-               "salience B - Default C",
-               'Visual A- Default C',
-               'Dorsal Attention A - Control B',
-               'Dorsal Attention B - Temporal Parietal',
-               'Limbic A - Control A',
-               'Visual A - Visual B',
-               'Salience B - Default B',
-               'Visual A - Somatomotor B',
-               'Visual B - Default B',
-               'Visusal B - Temporal Parietal')
+    labels = c('Visual B - Limbic A | Ruminative Coping Style' = 'Visual B - Limbic A',
+               'Salience A | Sensitivity to Punishment' = 'Salience A',
+               'Dorsal Attention A - Default C | Ruminative Coping Style' = 'Dorsal Attention A - Default C',
+               'Somatomotor B - Salience B | Ruminative Coping Style' = 'Somatomotor B - Salience B',
+               'Visual B - Limbic A | Ruminative Coping Style' = 'Visual B - Limbic A',
+               'Salience A | Sensitivity to Punishment' = 'Salience A',
+               'Limbic A | Sensitivity to Reward' = 'Limbic A',
+               'Limbic A | Depression' = 'Limbic A',
+               'Default B - Default C | Ruminative Coping Style' = 'Default B - Default C',
+               'Dorsal Attention A - Default C | Ruminative Coping Style' = 'Dorsal Attention A - Default C',
+               'Salience B - Default C | Ruminative Coping Style' = 'Salience B - Default C',
+               'Visual A - Default C | Ruminative Coping Style' = 'Visual A - Default C',
+               'Dorsal Attention A - Control B | Sensitivity to Punishment' = 'Dorsal Attention A - Control B',
+               'Dorsal Attention B - Temporal Parietal | Sensitivity to Punishment' = 'Dorsal Attention B - Temporal Parietal',
+               'Limbic A - Control A | Sensitivity to Punishment' = 'Limbic A - Control A',
+               'Visual A - Visual B | Sensitivity to Punishment' = 'Visual A - Visual B',
+               'Salience B - Default B | Sensitivity to Reward' = 'Salience B - Default B',
+               'Visual A - Somatomotor B | Sensitivity to Reward' = 'Visual A - Somatomotor B',
+               'Visual B - Default B | Sensitivity to Reward' = 'Visual B - Default B',
+               'Visual B - Temporal Parietal | Sensitivity to Reward' = 'Visusal B - Temporal Parietal')
   ) +
   ylab('Correlation between Clinical and Connectivity') +
   xlab('Connectivity') + 
