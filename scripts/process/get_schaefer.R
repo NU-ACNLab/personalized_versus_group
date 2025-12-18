@@ -47,12 +47,21 @@ ParcMat <- resample_cifti(ParcMat, resamp_res = 10000)
 # Get the medial wall out so that ParcMat and cii are the same spatial dimensions
 cii <- move_from_mwall(cii, 0)
 
+# Mask for medial wall (includes vertices from both medial walls)
+cii_mwall <- rowSums(as.matrix(cii) != 0) == 0
+ParcMat_mwall <- c(as.matrix(ParcMat) == 0)
+mwall <- cii_mwall | ParcMat_mwall
+
 # Turn the cifti into a matrix object so you can use matrix operations on it
 cii <- as.matrix(cii)
 
+# Mask out medial wall for cii 
+cii <- cii[!(mwall),]
+
 # Create a matrix of indicators out of ParcMat
 v <- as.integer(c(ParcMat$data$cortex_left, ParcMat$data$cortex_right))  # ensure integer
-vals <- 0:400
+v <- v[!(mwall)]
+vals <- 1:400
 mat <- outer(v, vals, `==`)
 
 # Parcellate
@@ -61,4 +70,3 @@ parced <- t(cii - rowMeans(cii)) %*% mat
 
 # Get FC
 FC <- cor(parced)
-FC <- FC[2:401, 2:401]

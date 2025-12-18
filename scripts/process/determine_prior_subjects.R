@@ -4,7 +4,7 @@
 ### for use in estimating the prior
 ###
 ### Ellyn Butler
-### July 8, 2025 - September 19, 2025
+### July 8, 2025 - December 17, 2025
 
 # Load data
 indir <- '~/Documents/Northwestern/projects/personalized_versus_group/data/processed/'
@@ -33,6 +33,9 @@ sum(df$minutes < 5) # number of these subjects = 0
 
 # Filter out subjects with meanFD > .5
 df <- df[df$meanFD < .5, ] # N = 324
+
+# Minutes distribution info
+summary(df$minutes)
 
 # Write csv
 write.csv(df, paste0(indir, 'neuroimaging/tabulated/prior_subjects_', format(Sys.Date(), "%Y-%m-%d"), '.csv'), row.names = FALSE)
