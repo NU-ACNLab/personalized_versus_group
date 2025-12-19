@@ -2,7 +2,7 @@
 ### the Schaefer 400 atlas
 ### 
 ### Ellyn Butler
-### December 16, 2025
+### December 16, 2025 - December 19, 2025
 
 # Load libraries
 library(ciftiTools)
@@ -70,3 +70,24 @@ parced <- t(cii - rowMeans(cii)) %*% mat
 
 # Get FC
 FC <- cor(parced)
+colnames(FC) <- row.names(ParcMat$meta$cifti$labels$parcels)[2:401]
+row.names(FC) <- row.names(ParcMat$meta$cifti$labels$parcels)[2:401]
+
+idx <- which(upper.tri(FC), arr.ind = TRUE)
+
+# Name the variables
+fcs <- FC[upper.tri(FC)]
+names(fcs) <- paste(
+  rownames(FC)[idx[, 'row']],
+  colnames(FC)[idx[, 'col']],
+  sep = '_'
+)
+fcs <- data.frame(fcs)
+fcs <- t(fcs)
+
+# Write out
+df <- data.frame(subid = subid, sesid = sesid)
+df <- cbind(df, fcs)
+
+write.csv(df, paste0(outdir, 'sub-', subid, '/ses-', sesid, '/sub-', subid, '_ses-', 
+                     sesid, '_schaefer_400.csv'), row.names = FALSE)
