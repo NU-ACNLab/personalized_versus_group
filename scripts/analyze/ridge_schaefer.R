@@ -3,7 +3,9 @@
 ### predicting the four clinical metrics.
 ###
 ### Ellyn Butler
-### December 24, 2025
+### December 24, 2025 - December 25, 2025
+
+set.seed(1234)
 
 library(glmnet)
 
@@ -16,6 +18,7 @@ df <- merge(clin_df, net_df)
 
 # Select variables to include in model
 FCs <- names(df)[grepl('FC', names(df))]
+FCs <- unique(FCs)
 
 # Regression
 clins <- c('rrs_sum', 'bdi_sum', 'punishment', 'reward')
@@ -50,17 +53,17 @@ for (clin in clins) {
             y_predicted <- predict(ridge_model, s = best_lambda, newx = X_test) 
             
              # Calculate SST
-            sst <- sum((y_ordered - mean(y_ordered))^2)
+            sst <- sum((y_test - mean(y_test))^2)
 
             # Calculate SSE
-            sse <- sum((y_predicted - y_ordered)^2)
+            sse <- sum((y_predicted - y_test)^2)
 
             # Get rsq
             full_rsq <- 1 - (sse/sst)
-            full_rsqs <- c(full_rqs, full_rsq)
+            full_rsqs <- c(full_rsqs, full_rsq)
         }
-        assign(paste0('full_rsqs_', clin))
+        assign(paste0('full_rsqs_', clin), full_rsqs)
         print(paste0('A ridge model with ', clin, 
             ' as the outcome measure has an average out of sample R squared value of ', 
-            mean(full_rsq)))
+            mean(full_rsqs)))
 }
