@@ -66,17 +66,16 @@ mat <- outer(v, vals, `==`)
 
 # Parcellate
 parced <- t(cii - rowMeans(cii)) %*% mat 
-# The format of as.matrix(ParcMat) needs to change so that it is 20484 by 401 (number of parcel values), I believe
 
 # Get FC
 FC <- cor(parced)
 colnames(FC) <- row.names(ParcMat$meta$cifti$labels$parcels)[2:401]
 row.names(FC) <- row.names(ParcMat$meta$cifti$labels$parcels)[2:401]
 
-idx <- which(upper.tri(FC), arr.ind = TRUE)
+idx <- which(upper.tri(FC), arr.ind = TRUE) 
 
 # Name the variables
-fcs <- FC[upper.tri(FC)]
+fcs <- FC[upper.tri(FC)] 
 names(fcs) <- paste(
   rownames(FC)[idx[, 'row']],
   colnames(FC)[idx[, 'col']],

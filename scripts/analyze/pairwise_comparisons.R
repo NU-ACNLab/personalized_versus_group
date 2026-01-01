@@ -2,7 +2,7 @@
 ### generates a plot with these results
 ###
 ### Ellyn Butler
-### August 17, 2025 - December 13, 2025
+### August 17, 2025 - December 26, 2025
 
 # Load libraries
 library(ggplot2)
@@ -43,7 +43,7 @@ gi_df[gi_df$p_fdr < .05, ] #none significant
 gi_df[gi_df$p < .05, ] #25
 gi_df[gi_df$p < .01, ] #2
 
-gi_df$Comparison <- 'Group vs. Int.'
+gi_df$Comparison <- 'Group vs. Intersection' #'Group vs. Int.'
 
 gi_df2 <- gi_df[gi_df$p < .01, ]
 
@@ -61,6 +61,8 @@ names(gi_int_df2) <- c('Comparison', 'Method', 'Clinical', 'Connectivity', 'r')
 # larger than the magnitude of the association between group and clinical
 # on average?
 mean(abs(gi_df$r13) - abs(gi_df$r12))
+
+gi_df$diff_abs <- abs(gi_df$r13) - abs(gi_df$r12)
 
 # B. Personalized versus intersection
 pers <- gsub('group', 'pers', group)
@@ -110,6 +112,8 @@ names(pi_int_df2) <- c('Comparison', 'Method', 'Clinical', 'Connectivity', 'r')
 # on average?
 mean(abs(pi_df$r12) - abs(pi_df$r13))
 
+pi_df$diff_abs <- abs(pi_df$r12) - abs(pi_df$r13)
+
 # C. Group versus Personalized
 gp_df <- data.frame(Clinical = c(rep('rrs_sum', length(group)), 
                               rep('bdi_sum', length(group)), 
@@ -156,7 +160,9 @@ names(gp_pers_df2) <- c('Comparison', 'Method', 'Clinical', 'Connectivity', 'r')
 # on average?
 mean(abs(gp_df$r12) - abs(gp_df$r13))
 
-# D. Plotting
+gp_df$diff_abs <- abs(gp_df$r12) - abs(gp_df$r13)
+
+# D. Plotting - specific comparisons
 comb_df <- rbind(
     gi_group_df2, gi_int_df2, 
     pi_pers_df2, pi_int_df2, 
@@ -240,3 +246,61 @@ plot1 <- ggplot(comb_df, aes(
 png(paste0('~/Documents/Northwestern/projects/personalized_versus_group/plots/effect_size_comparisons_', format(Sys.Date()),'.png'), width = 3000, height = 1800, res = 300)
 plot1
 dev.off()
+
+# E. Plotting - distributions
+names(gi_df) <- c('Clinical', 'type1', 'type2', 'r12', 'r13', 'r23',
+                  't', 'p', 'p_fdr', 'Comparison', 'diff_abs')
+names(pi_df) <- c('Clinical', 'type1', 'type2', 'r12', 'r13', 'r23',
+                  't', 'p', 'p_fdr', 'Comparison', 'diff_abs')
+names(gp_df) <- c('Clinical', 'type1', 'type2', 'r12', 'r13', 'r23',
+                  't', 'p', 'p_fdr', 'Comparison', 'diff_abs')
+
+# Group vs. Intersection
+gi_long <- data.frame(Correlations = c(rep('Group', nrow(gi_df)), rep('Intersection', nrow(gi_df)), 
+                rep('Difference of the Absolute Values', nrow(gi_df))), 
+                Values = c(gi_df$r12, gi_df$r13, gi_df$diff_abs))
+gi_long$Correlations <- ordered(gi_long$Correlations, c('Group', 'Intersection','Difference of the Absolute Values'))
+
+gi_plot <- ggplot(gi_long, aes(Values, fill = Correlations)) + theme_linedraw() + 
+            geom_density(alpha = 0.5) + 
+            scale_fill_manual(values = c('#b7baeb', '#b7ebc5', 'black')) + 
+            theme(legend.position = 'bottom') +  
+            xlim(c(-.2, .2)) + ylim(c(0, 18))
+            
+png(paste0('~/Documents/Northwestern/projects/personalized_versus_group/plots/gi_', format(Sys.Date()),'.png'), width = 2100, height = 1200, res = 380)
+gi_plot
+dev.off()
+
+# Personalized vs. Intersection
+pi_long <- data.frame(Correlations = c(rep('Personalized', nrow(pi_df)), rep('Intersection', nrow(pi_df)), 
+                rep('Difference of the Absolute Values', nrow(pi_df))), 
+                Values = c(pi_df$r12, pi_df$r13, pi_df$diff_abs)) 
+pi_long$Correlations <- ordered(pi_long$Correlations, c('Personalized', 'Intersection','Difference of the Absolute Values'))
+
+pi_plot <- ggplot(pi_long, aes(Values, fill = Correlations)) + theme_linedraw() + 
+            geom_density(alpha = 0.5) + 
+            scale_fill_manual(values = c('#ebe6b7', '#b7ebc5', 'black')) + 
+            theme(legend.position = 'bottom') + 
+            xlim(c(-.2, .2)) + ylim(c(0, 18))
+
+png(paste0('~/Documents/Northwestern/projects/personalized_versus_group/plots/pi_', format(Sys.Date()),'.png'), width = 2100, height = 1200, res = 380)
+pi_plot
+dev.off()
+
+# Group vs. Personalized
+gp_long <- data.frame(Correlations = c(rep('Group', nrow(gp_df)), rep('Personalized', nrow(gp_df)), 
+                rep('Difference of the Absolute Values', nrow(gp_df))), 
+                Values = c(gp_df$r12, gp_df$r13, gp_df$diff_abs)) 
+gp_long$Correlations <- ordered(gp_long$Correlations, c('Group', 'Personalized', 'Difference of the Absolute Values'))
+
+gp_plot <- ggplot(gp_long, aes(Values, fill = Correlations)) + theme_linedraw() + 
+            geom_density(alpha = 0.5) + 
+            scale_fill_manual(values = c('#b7baeb', '#ebe6b7', 'black')) + 
+            theme(legend.position = 'bottom') + 
+            xlim(c(-.2, .2)) + ylim(c(0, 18))
+
+png(paste0('~/Documents/Northwestern/projects/personalized_versus_group/plots/gp_', format(Sys.Date()),'.png'), width = 2100, height = 1200, res = 380)
+gp_plot
+dev.off()
+            #Personalized: #ebe6b7
+            #Intersection: 

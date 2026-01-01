@@ -3,31 +3,34 @@
 ### predicting the four clinical metrics.
 ###
 ### Ellyn Butler
-### December 24, 2025 - December 25, 2025
+### December 24, 2025 - December 31, 2025
 
 set.seed(1234)
 
+# Load data
+library(data.table)
 library(glmnet)
 
 indir <- '/projects/b1108/projects/personalized_versus_group/data/processed/neuroimaging/tabulated/'
-#comp_df <- read.csv(paste0(indir, 'spatial_components_1perc_2025-12-14.csv'))
-clin_df <- read.csv(paste0(indir, 'prior_subjects_2025-09-19.csv'))
-net_df <- read.csv(paste0(indir, 'schaefer_400_2025-12-24.csv'))
 
-df <- merge(clin_df, net_df)
+clin_df <- fread(paste0(indir, 'prior_subjects_2025-09-19.csv'))
+net_df  <- fread(paste0(indir, 'schaefer_400_2025-12-24.csv'))
 
-# Select variables to include in model
-FCs <- names(df)[grepl('FC', names(df))]
-FCs <- unique(FCs)
+# Merge
+setkey(clin_df, 'subid')
+setkey(net_df, 'subid')
 
-# Regression
+df <- net_df[clin_df]   # left join, fast
+
+# Extract matrices
+FCs   <- grep('^17networks', names(df), value = TRUE)
 clins <- c('rrs_sum', 'bdi_sum', 'punishment', 'reward')
 
 lambda_seq <- 10^seq(3, -3, by = -.1)
-X <- scale(as.matrix(df[, FCs]))
+X <- as.matrix(df[, FCs, with = FALSE]) 
 
 for (clin in clins) {
-        y <- scale(as.matrix(df[, clin]))
+        y <- scale(df[, ..clin])
         #penalized_columns <- c(rep(0, length(FCs)), rep(1, length(exps)), rep(1, length(comps)))
         
         ind <- sample(1:324)
@@ -42,7 +45,7 @@ for (clin in clins) {
             # Full model
             cv_ridge <- cv.glmnet(X_train, y_train, alpha = 0, lambda = lambda_seq)
                         #penalty.factor = penalized_columns)
-            best_lambda <- cv_ridge$lambda.min # rrs_sum chose 1000, 
+            best_lambda <- cv_ridge$lambda.min 
             print(paste0(clin, ' ', best_lambda))
 
             ridge_model <- cv_ridge$glmnet.fit
