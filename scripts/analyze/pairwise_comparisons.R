@@ -2,7 +2,9 @@
 ### generates a plot with these results
 ###
 ### Ellyn Butler
-### August 17, 2025 - December 26, 2025
+### August 17, 2025 - February 10, 2026
+
+set.seed(1234)
 
 # Load libraries
 library(ggplot2)
@@ -13,7 +15,7 @@ library(dplyr)
 # Load data
 df <- read.csv('~/Documents/Northwestern/projects/personalized_versus_group/data/processed/combined/combined_2025-12-13.csv')
 
-# A. Group versus intersection
+##### A. Group versus intersection
 group <- names(df)[grep('group', names(df))]
 int <- gsub('group', 'int', group)
 
@@ -59,12 +61,74 @@ names(gi_int_df2) <- c('Comparison', 'Method', 'Clinical', 'Connectivity', 'r')
 
 # Is the magnitude of the association between intersection and clinical
 # larger than the magnitude of the association between group and clinical
-# on average?
+# on average? Significant?
+
+# Across clinical
 mean(abs(gi_df$r13) - abs(gi_df$r12))
 
 gi_df$diff_abs <- abs(gi_df$r13) - abs(gi_df$r12)
 
-# B. Personalized versus intersection
+# Permutations
+df2 <- df
+gi_perm_df <- data.frame('rrs_sum' = rep(NA, 1000),
+                         'bdi_sum' = rep(NA, 1000),
+                         'punishment' = rep(NA, 1000),
+                         'reward' = rep(NA, 1000))
+# Loop through each permutation
+for (i in 1:nrow(gi_perm_df)) {
+    # Loop through the clinical variables
+    for (clin in names(gi_perm_df)) {
+        gi_tmp_df <- data.frame(group = group,
+                    int = int,
+                    r12 = NA, r13 = NA)
+        # Loop through the FC variables
+        for (j in 1:nrow(gi_tmp_df)) {
+            # Get the group and intersection FC variable names
+            gname <- gi_tmp_df[j, 'group']
+            iname <- gi_tmp_df[j, 'int']
+
+            # Permute values
+            swap <- runif(nrow(df2)) < 0.5
+            df2[swap, c(gname, iname)] <- df2[swap, c(iname, gname)]
+
+            # Calculate permuted correlations
+            gi_tmp_df[j, 'r12'] <- cor(df2[, gname], df2[, clin])
+            gi_tmp_df[j, 'r13'] <- cor(df2[, iname], df2[, clin])
+        } 
+        # Get the mean of the difference of the absolute values
+        gi_perm_df[i, clin] <- mean(abs(gi_tmp_df$r13) - abs(gi_tmp_df$r12))
+    }
+}
+
+# Ruminative coping style
+r_m <- mean(abs(gi_df[gi_df$Clinical == 'rrs_sum', 'r13']) - abs(gi_df[gi_df$Clinical == 'rrs_sum', 'r12']))
+summary(gi_perm_df$rrs_sum)
+
+sum(r_m > gi_perm_df$rrs_sum)/nrow(gi_perm_df) # it is more extreme (more negative) than all but 13 of the permuted values
+# p = 0.013
+
+# Depression
+d_m <- mean(abs(gi_df[gi_df$Clinical == 'bdi_sum', 'r13']) - abs(gi_df[gi_df$Clinical == 'bdi_sum', 'r12']))
+summary(gi_perm_df$bdi_sum)
+
+sum(d_m < gi_perm_df$bdi_sum)/nrow(gi_perm_df) # it is more extreme (more positive) than all of the permuted values
+# p < 0.001
+
+# Sensitivity to Punishment
+sp_m <- mean(abs(gi_df[gi_df$Clinical == 'punishment', 'r13']) - abs(gi_df[gi_df$Clinical == 'punishment', 'r12']))
+summary(gi_perm_df$punishment)
+
+sum(sp_m < gi_perm_df$punishment)/nrow(gi_perm_df) # it is more extreme (greater) than all but 68 of the permuted values
+# p = 0.068
+
+# Sensitivity to Reward
+sr_m <- mean(abs(gi_df[gi_df$Clinical == 'reward', 'r13']) - abs(gi_df[gi_df$Clinical == 'reward', 'r12']))
+summary(gi_perm_df$reward)
+
+sum(sr_m < gi_perm_df$reward)/nrow(gi_perm_df) # it is more extreme (more positive) than all but 6 of the permuted values
+# p = 0.006
+
+##### B. Personalized versus intersection
 pers <- gsub('group', 'pers', group)
 
 pi_df <- data.frame(Clinical = c(rep('rrs_sum', length(group)), 
@@ -114,7 +178,7 @@ mean(abs(pi_df$r12) - abs(pi_df$r13))
 
 pi_df$diff_abs <- abs(pi_df$r12) - abs(pi_df$r13)
 
-# C. Group versus Personalized
+##### C. Group versus Personalized
 gp_df <- data.frame(Clinical = c(rep('rrs_sum', length(group)), 
                               rep('bdi_sum', length(group)), 
                               rep('punishment', length(group)), 
