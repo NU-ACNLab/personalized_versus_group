@@ -2,7 +2,9 @@
 ### generates a plot with these results
 ###
 ### Ellyn Butler
-### August 17, 2025 - September 29, 2025
+### August 17, 2025 - February 10, 2026
+
+set.seed(1234)
 
 # Load libraries
 library(ggplot2)
@@ -11,13 +13,9 @@ library(psych)
 library(dplyr)
 
 # Load data
-df <- read.csv('~/Documents/Northwestern/projects/personalized_versus_group/data/processed/combined/combined_2025-09-29.csv')
+df <- read.csv('~/Documents/Northwestern/projects/personalized_versus_group/data/processed/combined/combined_2025-12-13.csv')
 
-# Descriptive
-summary(df$age)
-table(df$sex) #0 male, 1 female
-
-# A. Group versus intersection
+##### A. Group versus intersection
 group <- names(df)[grep('group', names(df))]
 int <- gsub('group', 'int', group)
 
@@ -44,10 +42,10 @@ for (i in 1:nrow(gi_df)) {
 }
 gi_df$p_fdr <- p.adjust(gi_df$p, method = 'fdr')
 gi_df[gi_df$p_fdr < .05, ] #none significant
-gi_df[gi_df$p < .05, ] #21
-gi_df[gi_df$p < .01, ] #5
+gi_df[gi_df$p < .05, ] #25
+gi_df[gi_df$p < .01, ] #2
 
-gi_df$Comparison <- 'Group vs. Intersection'
+gi_df$Comparison <- 'Group vs. Intersection' #'Group vs. Int.'
 
 gi_df2 <- gi_df[gi_df$p < .01, ]
 
@@ -61,7 +59,77 @@ gi_int_df2$Method <- 'Intersection'
 gi_int_df2 <- gi_int_df2[, c('Comparison', 'Method', 'Clinical', 'int', 'r13')]
 names(gi_int_df2) <- c('Comparison', 'Method', 'Clinical', 'Connectivity', 'r')
 
-# B. Personalized versus intersection
+# Is the magnitude of the association between intersection and clinical
+# larger than the magnitude of the association between group and clinical
+# on average? Significant?
+
+# Across clinical
+mean(abs(gi_df$r13) - abs(gi_df$r12))
+
+gi_df$diff_abs <- abs(gi_df$r13) - abs(gi_df$r12)
+
+# Permutations
+gi_perm_df <- data.frame('rrs_sum' = rep(NA, 1000),
+                         'bdi_sum' = rep(NA, 1000),
+                         'punishment' = rep(NA, 1000),
+                         'reward' = rep(NA, 1000))
+# Loop through each permutation
+for (i in 1:nrow(gi_perm_df)) {
+    df2 <- df
+
+    # Loop through the clinical variables
+    for (clin in names(gi_perm_df)) {
+        gi_tmp_df <- data.frame(group = group,
+                    int = int,
+                    r12 = NA, r13 = NA)
+        # Loop through the FC variables
+        for (j in 1:nrow(gi_tmp_df)) {
+            # Get the group and intersection FC variable names
+            gname <- gi_tmp_df[j, 'group']
+            iname <- gi_tmp_df[j, 'int']
+
+            # Permute values
+            swap <- runif(nrow(df2)) < 0.5
+            df2[swap, c(gname, iname)] <- df[swap, c(iname, gname)]
+
+            # Calculate permuted correlations
+            gi_tmp_df[j, 'r12'] <- cor(df2[, gname], df2[, clin])
+            gi_tmp_df[j, 'r13'] <- cor(df2[, iname], df2[, clin])
+        } 
+        # Get the mean of the difference of the absolute values
+        gi_perm_df[i, clin] <- mean(abs(gi_tmp_df$r13) - abs(gi_tmp_df$r12))
+    }
+}
+
+# Ruminative coping style
+r_m <- mean(abs(gi_df[gi_df$Clinical == 'rrs_sum', 'r13']) - abs(gi_df[gi_df$Clinical == 'rrs_sum', 'r12']))
+summary(gi_perm_df$rrs_sum)
+
+sum(r_m > gi_perm_df$rrs_sum)/nrow(gi_perm_df) # it is more extreme (more negative) than all but 7 of the permuted values
+# p = 0.007
+
+# Depression
+d_m <- mean(abs(gi_df[gi_df$Clinical == 'bdi_sum', 'r13']) - abs(gi_df[gi_df$Clinical == 'bdi_sum', 'r12']))
+summary(gi_perm_df$bdi_sum)
+
+sum(d_m < gi_perm_df$bdi_sum)/nrow(gi_perm_df) # it is more extreme (more positive) than all of the permuted values
+# p < 0.001
+
+# Sensitivity to Punishment
+sp_m <- mean(abs(gi_df[gi_df$Clinical == 'punishment', 'r13']) - abs(gi_df[gi_df$Clinical == 'punishment', 'r12']))
+summary(gi_perm_df$punishment)
+
+sum(sp_m < gi_perm_df$punishment)/nrow(gi_perm_df) # it is more extreme (greater) than all but 3 of the permuted values
+# p = 0.003
+
+# Sensitivity to Reward
+sr_m <- mean(abs(gi_df[gi_df$Clinical == 'reward', 'r13']) - abs(gi_df[gi_df$Clinical == 'reward', 'r12']))
+summary(gi_perm_df$reward)
+
+sum(sr_m < gi_perm_df$reward)/nrow(gi_perm_df) # it is more extreme (more positive) than all of the permuted values
+# p < 0.001
+
+##### B. Personalized versus intersection
 pers <- gsub('group', 'pers', group)
 
 pi_df <- data.frame(Clinical = c(rep('rrs_sum', length(group)), 
@@ -87,8 +155,8 @@ for (i in 1:nrow(pi_df)) {
 }
 pi_df$p_fdr <- p.adjust(pi_df$p, method = 'fdr')
 pi_df[pi_df$p_fdr < .05, ] #none significant
-pi_df[pi_df$p < .05, ] #37
-pi_df[pi_df$p < .01, ] #5
+pi_df[pi_df$p < .05, ] #46
+pi_df[pi_df$p < .01, ] #13
 
 pi_df$Comparison <- 'Personalized vs. Intersection'
 
@@ -104,39 +172,328 @@ pi_int_df2$Method <- 'Intersection'
 pi_int_df2 <- pi_int_df2[, c('Comparison', 'Method', 'Clinical', 'int', 'r13')]
 names(pi_int_df2) <- c('Comparison', 'Method', 'Clinical', 'Connectivity', 'r')
 
-# C. Plotting
+
+# Is the magnitude of the association between personalized and clinical
+# larger than the magnitude of the association between intersection and clinical
+# on average? Significant?
+
+# Across clinical
+mean(abs(pi_df$r13) - abs(pi_df$r12))
+
+pi_df$diff_abs <- abs(pi_df$r13) - abs(pi_df$r12)
+
+# Permutations
+pi_perm_df <- data.frame('rrs_sum' = rep(NA, 1000),
+                         'bdi_sum' = rep(NA, 1000),
+                         'punishment' = rep(NA, 1000),
+                         'reward' = rep(NA, 1000))
+# Loop through each permutation
+for (i in 1:nrow(pi_perm_df)) {
+    df2 <- df
+
+    # Loop through the clinical variables
+    for (clin in names(pi_perm_df)) {
+        pi_tmp_df <- data.frame(pers = pers,
+                    int = int,
+                    r12 = NA, r13 = NA)
+        # Loop through the FC variables
+        for (j in 1:nrow(pi_tmp_df)) {
+            # Get the group and intersection FC variable names
+            pname <- pi_tmp_df[j, 'pers']
+            iname <- pi_tmp_df[j, 'int']
+
+            # Permute values
+            swap <- runif(nrow(df2)) < 0.5
+            df2[swap, c(pname, iname)] <- df[swap, c(iname, pname)]
+
+            # Calculate permuted correlations
+            pi_tmp_df[j, 'r12'] <- cor(df2[, pname], df2[, clin])
+            pi_tmp_df[j, 'r13'] <- cor(df2[, iname], df2[, clin])
+        } 
+        # Get the mean of the difference of the absolute values
+        pi_perm_df[i, clin] <- mean(abs(pi_tmp_df$r13) - abs(pi_tmp_df$r12))
+    }
+}
+
+# Ruminative coping style
+r_m <- mean(abs(pi_df[pi_df$Clinical == 'rrs_sum', 'r13']) - abs(pi_df[pi_df$Clinical == 'rrs_sum', 'r12']))
+summary(pi_perm_df$rrs_sum)
+
+sum(r_m < pi_perm_df$rrs_sum)/nrow(pi_perm_df) # 
+# p = 0.001
+
+# Depression
+d_m <- mean(abs(pi_df[pi_df$Clinical == 'bdi_sum', 'r13']) - abs(pi_df[pi_df$Clinical == 'bdi_sum', 'r12']))
+summary(pi_perm_df$bdi_sum)
+
+sum(d_m > pi_perm_df$bdi_sum)/nrow(pi_perm_df) # 
+# p = 0.003
+
+# Sensitivity to Punishment
+sp_m <- mean(abs(pi_df[pi_df$Clinical == 'punishment', 'r13']) - abs(pi_df[pi_df$Clinical == 'punishment', 'r12']))
+summary(pi_perm_df$punishment)
+
+sum(sp_m < pi_perm_df$punishment)/nrow(pi_perm_df) # 
+# p < 0.001
+
+# Sensitivity to Reward
+sr_m <- mean(abs(pi_df[pi_df$Clinical == 'reward', 'r13']) - abs(pi_df[pi_df$Clinical == 'reward', 'r12']))
+summary(pi_perm_df$reward)
+
+sum(sr_m > pi_perm_df$reward)/nrow(pi_perm_df) # 
+# p < 0.001
+
+##### C. Group versus Personalized
+gp_df <- data.frame(Clinical = c(rep('rrs_sum', length(group)), 
+                              rep('bdi_sum', length(group)), 
+                              rep('punishment', length(group)), 
+                              rep('reward', length(group))),
+                    group = rep(group, 4),
+                    pers = rep(pers, 4),
+                    r12 = NA, r13 = NA, r23 = NA, t = NA, p = NA)
+for (i in 1:nrow(gp_df)) {
+    clin <- gp_df[i, 'Clinical']
+    gname <- gp_df[i, 'group']
+    pname <- gp_df[i, 'pers']
+    r12 <- cor(df[, gname], df[, clin])
+    r13 <- cor(df[, pname], df[, clin])
+    r23 <- cor(df[, gname], df[, pname])
+    gp_df[i, 'r12'] <- r12
+    gp_df[i, 'r13'] <- r13
+    gp_df[i, 'r23'] <- r23
+    res <- r.test(n = nrow(df), r12 = r12, r13 = r13, r23 = r23)
+    gp_df[i, 't'] <- res$t
+    gp_df[i, 'p'] <- res$p
+}
+gp_df$p_fdr <- p.adjust(gp_df$p, method = 'fdr')
+gp_df[gp_df$p_fdr < .05, ] # 0
+gp_df[gp_df$p < .05, ] # 39
+gp_df[gp_df$p < .01, ] #5
+
+gp_df$Comparison <- 'Group vs. Personalized'
+
+gp_df2 <- gp_df[gp_df$p < .01, ]
+
+gp_group_df2 <- gp_df2[, c('Comparison', 'Clinical', 'pers', 'r12')]
+gp_group_df2$Method <- 'Group'
+gp_group_df2 <- gp_group_df2[, c('Comparison', 'Method', 'Clinical', 'pers', 'r12')]
+names(gp_group_df2) <- c('Comparison', 'Method', 'Clinical', 'Connectivity', 'r')
+
+gp_pers_df2 <- gp_df2[, c('Comparison', 'Clinical', 'pers', 'r13')]
+gp_pers_df2$Method <- 'Personalized'
+gp_pers_df2 <- gp_pers_df2[, c('Comparison', 'Method', 'Clinical', 'pers', 'r13')]
+names(gp_pers_df2) <- c('Comparison', 'Method', 'Clinical', 'Connectivity', 'r')
+
+
+# Is the magnitude of the association between group and clinical
+# larger than the magnitude of the association between personalized and clinical
+# on average? Significant?
+
+# Across clinical
+mean(abs(gp_df$r13) - abs(gp_df$r12))
+
+gp_df$diff_abs <- abs(gp_df$r13) - abs(gp_df$r12)
+
+# Permutations
+gp_perm_df <- data.frame('rrs_sum' = rep(NA, 1000),
+                         'bdi_sum' = rep(NA, 1000),
+                         'punishment' = rep(NA, 1000),
+                         'reward' = rep(NA, 1000))
+# Loop through each permutation
+for (i in 1:nrow(gp_perm_df)) {
+    df2 <- df
+
+    # Loop through the clinical variables
+    for (clin in names(gp_perm_df)) {
+        gp_tmp_df <- data.frame(group = group,
+                    pers = pers,
+                    r12 = NA, r13 = NA)
+        # Loop through the FC variables
+        for (j in 1:nrow(gp_tmp_df)) {
+            # Get the group and intersection FC variable names
+            gname <- gp_tmp_df[j, 'group']
+            pname <- gp_tmp_df[j, 'pers']
+
+            # Permute values
+            swap <- runif(nrow(df2)) < 0.5
+            df2[swap, c(gname, pname)] <- df[swap, c(pname, gname)]
+
+            # Calculate permuted correlations
+            gp_tmp_df[j, 'r12'] <- cor(df2[, gname], df2[, clin])
+            gp_tmp_df[j, 'r13'] <- cor(df2[, pname], df2[, clin])
+        } 
+        # Get the mean of the difference of the absolute values
+        gp_perm_df[i, clin] <- mean(abs(gp_tmp_df$r13) - abs(gp_tmp_df$r12))
+    }
+}
+
+# Ruminative coping style
+r_m <- mean(abs(gp_df[gp_df$Clinical == 'rrs_sum', 'r13']) - abs(gp_df[gp_df$Clinical == 'rrs_sum', 'r12']))
+summary(gp_perm_df$rrs_sum)
+
+sum(r_m > gp_perm_df$rrs_sum)/nrow(gp_perm_df) # 
+# p < 0.001
+
+# Depression
+d_m <- mean(abs(gp_df[gp_df$Clinical == 'bdi_sum', 'r13']) - abs(gp_df[gp_df$Clinical == 'bdi_sum', 'r12']))
+summary(gp_perm_df$bdi_sum)
+
+sum(d_m < gp_perm_df$bdi_sum)/nrow(gp_perm_df) # 
+# p < 0.001
+
+# Sensitivity to Punishment
+sp_m <- mean(abs(gp_df[gp_df$Clinical == 'punishment', 'r13']) - abs(gp_df[gp_df$Clinical == 'punishment', 'r12']))
+summary(gp_perm_df$punishment)
+
+sum(sp_m < gp_perm_df$punishment)/nrow(gp_perm_df) # 
+# p = 0.614
+
+# Sensitivity to Reward
+sr_m <- mean(abs(gp_df[gp_df$Clinical == 'reward', 'r13']) - abs(gp_df[gp_df$Clinical == 'reward', 'r12']))
+summary(gp_perm_df$reward)
+
+sum(sr_m < gp_perm_df$reward)/nrow(gp_perm_df) # 
+# p < 0.001
+
+# D. Plotting - specific comparisons
 comb_df <- rbind(
-    gi_group_df2, gi_int_df2, pi_pers_df2, pi_int_df2
+    gi_group_df2, gi_int_df2, 
+    pi_pers_df2, pi_int_df2, 
+    gp_group_df2, gp_pers_df2
 )
 
-comb_df$Clinical <- recode(comb_df$Clinical, 'punishment' = 'Sensitivity to Punishment',
+comb_df$Clinical <- recode(comb_df$Clinical, 
+                            'bdi_sum' = 'Depression',
+                            'punishment' = 'Sensitivity to Punishment',
                             'reward' = 'Sensitivity to Reward',
-                            'rrs_sum' = 'Ruminative Coping Style')
+                            'rrs_sum' = 'Ruminative Coping Style'
+                        )
 
 comb_df$Method <- ordered(comb_df$Method, c('Group', 'Intersection', 'Personalized'))
 
 comb_df$Connectivity <- recode(comb_df$Connectivity, 
-                            'FC_int_somatomotorb_defaultc_pos' = 'Somatomotor B - Default C',
-                            'FC_int_somatomotorb_controla_pos' = 'Somatomotor B - Control A',
-                            'FC_int_saliencea_controla_pos' = 'Salience A - Control A', 
-                            'FC_int_salienceb_defaulta_pos' = 'Salience B - Default A',
-                            'FC_int_controlc_defaultb_pos' = 'Control C - Default B',
-                            'FC_int_dorsalattentiona_controlc_pos' = 'Dorsal Attention A - Control C',
-                            'FC_int_visuala_defaulta_pos' = 'Visual A - Default A',
-                            'FC_int_dorsalattentionb_controlb_pos' = 'Dorsal Attention B - Control B',
-                            'FC_int_saliencea_defaultb_pos' = 'Salience A - Default B',
-                            'FC_int_controla_pos' = 'Control A'
+                            'FC_int_visualb_limbica_pos' = 'Visual B - Limbic A',   #
+                            'FC_int_saliencea_pos' = 'Salience A',   #         
+                            'FC_int_visuala_defaultc_pos' = 'Visual A - Default C',   #   
+                            'FC_int_dorsalattentiona_defaultc_pos' = 'Dorsal Attention A - Default C', #
+                            'FC_int_salienceb_defaultc_pos' = 'Salience B - Default C',   # 
+                            'FC_int_defaultb_defaultc_pos' = 'Default B - Default C',    #
+                            'FC_int_limbica_pos' = 'Limbic A',  #              
+                            'FC_int_visuala_visualb_pos' = 'Visual A - Visual B',  #      
+                            'FC_int_visuala_somatomotorb_pos' = 'Visual A - Somatomotor B', #
+                            'FC_int_visualb_defaultb_pos' = 'Visual B - Default B',  #     
+                            'FC_int_visualb_temporalparietal_pos' = 'Visual B - Temporal Parietal', #
+                            'FC_int_dorsalattentiona_controlb_pos' = 'Dorsal Attention A - Control B', #
+                            'FC_int_dorsalattentionb_temporalparietal_pos' = 'Dorsal Attention B - Temporal Parietal', #
+                            'FC_int_limbica_controla_pos' = 'Limbic A - Control A', #
+                            'FC_int_salienceb_defaultb_pos' = 'Salience B - Default B', #
+                            'FC_pers_visualb_limbica_pos' = 'Visual B - Limbic A',
+                            'FC_pers_somatomotorb_salienceb_pos' = 'Somatomotor B - Salience B',
+                            'FC_pers_dorsalattentiona_defaultc_pos' = 'Dorsal Attention A - Default C',
+                            'FC_pers_saliencea_pos' = 'Salience A', 
+                            'FC_pers_limbica_pos' = 'Limbic A'
                         )
 
-plot1 <- ggplot(comb_df, aes(x = Connectivity, y = r, color = Clinical, shape = Method)) +
-            theme_linedraw() + geom_hline(yintercept = 0, linetype = 'dashed') + 
-            geom_line(aes(group = Connectivity), color = 'black', linewidth = 0.5) +
-            geom_point(size = 5, stat = 'identity') + ylim(-0.2, 0.2) + 
-            facet_grid(cols = vars(Comparison), scales = 'free_x', space = 'free_x') + 
-            scale_x_discrete(guide = guide_axis(angle = 45)) + 
-            ylab('Correlation between Clinical and Connectivity') +
-            theme(legend.position = 'bottom', legend.box = 'vertical') 
+comb_df$Connectivity_Clinical <- interaction(comb_df$Connectivity, comb_df$Clinical, sep = " | ")
 
-png(paste0('~/Documents/Northwestern/projects/personalized_versus_group/plots/effect_size_comparisons_', format(Sys.Date()),'.png'), width = 2500, height = 1800, res = 300)
+plot1 <- ggplot(comb_df, aes(
+    x = Connectivity_Clinical,
+    y = r,
+    color = Clinical,
+    shape = Method
+  )) +
+  theme_linedraw() +
+  geom_hline(yintercept = 0, linetype = 'dashed') +
+  geom_line(aes(group = Connectivity_Clinical), color = 'black', linewidth = 0.5) +
+  geom_point(size = 5) +
+  ylim(-0.2, 0.2) +
+  facet_grid(cols = vars(Comparison), scales = 'free_x', space = 'free_x') +
+  scale_shape_manual(values = c(15, 16, 18)) +
+  scale_x_discrete(
+    guide = guide_axis(angle = 60),
+    labels = c('Visual B - Limbic A | Ruminative Coping Style' = 'Visual B - Limbic A',
+               'Salience A | Sensitivity to Punishment' = 'Salience A',
+               'Dorsal Attention A - Default C | Ruminative Coping Style' = 'Dorsal Attention A - Default C',
+               'Somatomotor B - Salience B | Ruminative Coping Style' = 'Somatomotor B - Salience B',
+               'Visual B - Limbic A | Ruminative Coping Style' = 'Visual B - Limbic A',
+               'Salience A | Sensitivity to Punishment' = 'Salience A',
+               'Limbic A | Sensitivity to Reward' = 'Limbic A',
+               'Limbic A | Depression' = 'Limbic A',
+               'Default B - Default C | Ruminative Coping Style' = 'Default B - Default C',
+               'Dorsal Attention A - Default C | Ruminative Coping Style' = 'Dorsal Attention A - Default C',
+               'Salience B - Default C | Ruminative Coping Style' = 'Salience B - Default C',
+               'Visual A - Default C | Ruminative Coping Style' = 'Visual A - Default C',
+               'Dorsal Attention A - Control B | Sensitivity to Punishment' = 'Dorsal Attention A - Control B',
+               'Dorsal Attention B - Temporal Parietal | Sensitivity to Punishment' = 'Dorsal Attention B - Temporal Parietal',
+               'Limbic A - Control A | Sensitivity to Punishment' = 'Limbic A - Control A',
+               'Visual A - Visual B | Sensitivity to Punishment' = 'Visual A - Visual B',
+               'Salience B - Default B | Sensitivity to Reward' = 'Salience B - Default B',
+               'Visual A - Somatomotor B | Sensitivity to Reward' = 'Visual A - Somatomotor B',
+               'Visual B - Default B | Sensitivity to Reward' = 'Visual B - Default B',
+               'Visual B - Temporal Parietal | Sensitivity to Reward' = 'Visusal B - Temporal Parietal')
+  ) +
+  ylab('Correlation between Clinical and Connectivity') +
+  xlab('Connectivity') + 
+  theme(legend.position = 'bottom', legend.box = 'vertical')
+
+png(paste0('~/Documents/Northwestern/projects/personalized_versus_group/plots/effect_size_comparisons_', format(Sys.Date()),'.png'), width = 3000, height = 1800, res = 300)
 plot1
 dev.off()
+
+# E. Plotting - distributions
+names(gi_df) <- c('Clinical', 'type1', 'type2', 'r12', 'r13', 'r23',
+                  't', 'p', 'p_fdr', 'Comparison', 'diff_abs')
+names(pi_df) <- c('Clinical', 'type1', 'type2', 'r12', 'r13', 'r23',
+                  't', 'p', 'p_fdr', 'Comparison', 'diff_abs')
+names(gp_df) <- c('Clinical', 'type1', 'type2', 'r12', 'r13', 'r23',
+                  't', 'p', 'p_fdr', 'Comparison', 'diff_abs')
+
+# Group vs. Intersection
+gi_long <- data.frame(Correlations = c(rep('Group', nrow(gi_df)), rep('Intersection', nrow(gi_df)), 
+                rep('Difference of the Absolute Values', nrow(gi_df))), 
+                Values = c(gi_df$r12, gi_df$r13, gi_df$diff_abs))
+gi_long$Correlations <- ordered(gi_long$Correlations, c('Group', 'Intersection','Difference of the Absolute Values'))
+
+gi_plot <- ggplot(gi_long, aes(Values, fill = Correlations)) + theme_linedraw() + 
+            geom_density(alpha = 0.5) + 
+            scale_fill_manual(values = c('#b7baeb', '#b7ebc5', 'black')) + 
+            theme(legend.position = 'bottom') +  
+            xlim(c(-.2, .2)) + ylim(c(0, 18))
+            
+png(paste0('~/Documents/Northwestern/projects/personalized_versus_group/plots/gi_', format(Sys.Date()),'.png'), width = 2100, height = 1200, res = 380)
+gi_plot
+dev.off()
+
+# Personalized vs. Intersection
+pi_long <- data.frame(Correlations = c(rep('Personalized', nrow(pi_df)), rep('Intersection', nrow(pi_df)), 
+                rep('Difference of the Absolute Values', nrow(pi_df))), 
+                Values = c(pi_df$r12, pi_df$r13, pi_df$diff_abs)) 
+pi_long$Correlations <- ordered(pi_long$Correlations, c('Personalized', 'Intersection','Difference of the Absolute Values'))
+
+pi_plot <- ggplot(pi_long, aes(Values, fill = Correlations)) + theme_linedraw() + 
+            geom_density(alpha = 0.5) + 
+            scale_fill_manual(values = c('#ebe6b7', '#b7ebc5', 'black')) + 
+            theme(legend.position = 'bottom') + 
+            xlim(c(-.2, .2)) + ylim(c(0, 18))
+
+png(paste0('~/Documents/Northwestern/projects/personalized_versus_group/plots/pi_', format(Sys.Date()),'.png'), width = 2100, height = 1200, res = 380)
+pi_plot
+dev.off()
+
+# Group vs. Personalized
+gp_long <- data.frame(Correlations = c(rep('Group', nrow(gp_df)), rep('Personalized', nrow(gp_df)), 
+                rep('Difference of the Absolute Values', nrow(gp_df))), 
+                Values = c(gp_df$r12, gp_df$r13, gp_df$diff_abs)) 
+gp_long$Correlations <- ordered(gp_long$Correlations, c('Group', 'Personalized', 'Difference of the Absolute Values'))
+
+gp_plot <- ggplot(gp_long, aes(Values, fill = Correlations)) + theme_linedraw() + 
+            geom_density(alpha = 0.5) + 
+            scale_fill_manual(values = c('#b7baeb', '#ebe6b7', 'black')) + 
+            theme(legend.position = 'bottom') + 
+            xlim(c(-.2, .2)) + ylim(c(0, 18))
+
+png(paste0('~/Documents/Northwestern/projects/personalized_versus_group/plots/gp_', format(Sys.Date()),'.png'), width = 2100, height = 1200, res = 380)
+gp_plot
+dev.off()
+            #Personalized: #ebe6b7
+            #Intersection: 
